@@ -1,5 +1,6 @@
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
+import { MessageResponse } from '@/components/ai-elements/message'
 import type { CockpitUIMessage } from './tools'
 
 export function ChatParts({
@@ -13,7 +14,10 @@ export function ChatParts({
     <>
       {message.parts.map((part, idx) => {
         // Plain text.
-        if (part.type === 'text') return <span key={idx}>{part.text}</span>
+        if (part.type === 'text') {
+          // Use ai-elements Streamdown renderer (GFM tables, lists, etc).
+          return <MessageResponse key={idx}>{part.text}</MessageResponse>
+        }
 
         // Optional multi-step boundary.
         if (part.type === 'step-start') {
