@@ -1,7 +1,7 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { streamText } from 'ai'
 import { z } from 'zod'
-import { RAG_DOCS } from './rag/docs'
+import { KNOWLEDGE_BASE_DOCS } from './knowledge-base'
 import { getChatModel } from './env'
 
 export const config = {
@@ -17,7 +17,7 @@ type CompletionRequestBody = {
 
 function simpleRetrieveDocs(query: string, k: number) {
   const q = query.toLowerCase()
-  const scored = RAG_DOCS.map((d) => {
+  const scored = KNOWLEDGE_BASE_DOCS.map((d) => {
     const hay = (d.title + ' ' + d.id + ' ' + d.text + ' ' + (d.tags ?? []).join(' ')).toLowerCase()
     let score = 0
     for (const term of q.split(/\s+/).filter(Boolean)) if (hay.includes(term)) score += 1

@@ -1,7 +1,7 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { convertToModelMessages, streamText, type UIMessage } from 'ai'
 import { z } from 'zod'
-import { RAG_DOCS, type RagDoc } from './rag/docs'
+import { KNOWLEDGE_BASE_DOCS, type KnowledgeBaseDoc } from './knowledge-base'
 import { getChatModel } from './env'
 
 export const config = {
@@ -15,11 +15,11 @@ type ChatRequestBody = {
   filters?: unknown
 }
 
-function simpleRetrieveDocs(query: string, k: number): RagDoc[] {
+function simpleRetrieveDocs(query: string, k: number): KnowledgeBaseDoc[] {
   // MVP fallback retrieval (no embeddings yet). Swappable with vector similarity later.
   const q = query.toLowerCase()
 
-  const scored = RAG_DOCS.map((d) => {
+  const scored = KNOWLEDGE_BASE_DOCS.map((d) => {
     const hay = (d.title + ' ' + d.id + ' ' + d.text + ' ' + (d.tags ?? []).join(' ')).toLowerCase()
     let score = 0
     for (const term of q.split(/\s+/).filter(Boolean)) {

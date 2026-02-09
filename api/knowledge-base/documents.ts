@@ -1,13 +1,12 @@
-export type RagDoc = {
-  id: string
-  title: string
-  cluster: 'readiness' | 'momentum' | 'experience' | 'diversity' | 'economics' | 'global'
-  text: string
-  tags?: string[]
-}
+import type { KnowledgeBaseDoc } from './types'
 
-// MVP: small, high-signal corpus. Later we embed these docs and retrieve via vector similarity.
-export const RAG_DOCS: RagDoc[] = [
+// MVP: small, high-signal Knowledge Base (KB).
+//
+// Later we will:
+// - generate embeddings for these docs offline (using EMBEDDING_MODEL)
+// - store the vectors as rag/embeddings.f32 + rag/embeddings.meta.json
+// - swap the retrieveDocs tool implementation from keyword scoring to vector similarity
+export const KNOWLEDGE_BASE_DOCS: KnowledgeBaseDoc[] = [
   {
     id: 'global.alarm_narratives',
     title: 'Alarm Narrative Patterns',
