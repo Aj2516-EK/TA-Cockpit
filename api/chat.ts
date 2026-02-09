@@ -3,7 +3,7 @@ import { convertToModelMessages, streamText, type UIMessage } from 'ai'
 import { z } from 'zod'
 import { KNOWLEDGE_BASE_DOCS, type KnowledgeBaseDoc } from './knowledge-base'
 import { getChatModel, requiredEnv } from './env'
-import { safeErrorMessage } from './errors'
+import { getPublicAiErrorMessage } from './errors'
 
 export const config = {
   runtime: 'edge',
@@ -119,11 +119,6 @@ export default async function handler(req: Request): Promise<Response> {
   })
 
   return result.toUIMessageStreamResponse({
-    onError: (err) => {
-      // Mask errors but keep them minimally actionable for local dev.
-      const msg = safeErrorMessage(err)
-      if (msg.includes('Missing required env var')) return 'Server misconfigured (missing env vars).'
-      return 'An error occurred.'
-    },
+    onError: getPublicAiErrorMessage,
   })
 }

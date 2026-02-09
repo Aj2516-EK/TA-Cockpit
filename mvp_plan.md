@@ -1,5 +1,36 @@
 # TA Cockpit MVP Plan (Vercel-Hosted, Upload-Driven, Embeddings-in-Repo)
 
+## Task List (MVP)
+- [x] Vite + React + TypeScript scaffold in repo root
+- [x] Tailwind v4 configured (`@tailwindcss/vite`) + shared design tokens in `src/index.css`
+- [x] Preserve legacy prototype for reference in `legacy/`
+- [x] Clean UI skeleton in React (clusters, tiles, expand/collapse, sidebar collapse, top bar, filters drawer)
+- [x] “Ask AI” implemented as floating chat widget (client) with streaming
+- [x] Vercel Edge API endpoints:
+  - [x] `POST /api/chat` (streaming + tool calling)
+  - [x] `POST /api/completion` (optional)
+  - [x] `GET /api/health` (debug env visibility)
+- [x] OpenRouter integration via Vercel AI SDK + env-driven model selection
+- [x] Tool calling wired end-to-end:
+  - [x] Server tool: `retrieveDocs` (keyword search over KB docs)
+  - [x] Client tools: `openFilters`, `expandMetric`, `askForConfirmation` (UI tool parts)
+- [x] Markdown rendering in chat (tables/lists) via `ai-elements` Streamdown renderer
+- [x] User-friendly AI error messaging (rate limit, policy block, auth)
+
+- [ ] Upload XLSX/CSV in main panel (client-side)
+- [ ] Parse uploaded dataset -> normalized tables/rows in memory
+- [ ] Populate filter dropdown options from uploaded dataset
+- [ ] Apply filters -> recompute metrics live
+- [ ] Implement a deterministic “metrics engine” for the dataset we have (start with 5-8 computable KPIs)
+- [ ] Replace seeded/sample KPI values with computed values across all clusters (keep tiles visible; show `N/A` if not computable)
+- [ ] Knowledge Base expansion (docs per metric/cluster; actions/playbooks)
+- [ ] Embedding-based retrieval (Option 1):
+  - [ ] offline embedding generation script
+  - [ ] `rag/embeddings.f32` + `rag/embeddings.meta.json`
+  - [ ] cosine similarity retrieval in `retrieveDocs`
+- [ ] Persist chat history in browser (localStorage) (optional)
+- [ ] Vercel deploy from GitHub (env vars set in Vercel Project Settings)
+
 ## Goal
 Ship a hackathon MVP that is:
 - Fully functional (real computed metrics, real filtering, AI grounded in computed results)
@@ -35,9 +66,11 @@ Ship a hackathon MVP that is:
 3. Filters apply in the browser; metrics engine computes KPI values + supporting facts.
 4. UI renders clusters/tiles using the computed values and RAG ordering.
 5. Ask AI:
-   - Browser sends to `/api/ai`: `question`, `filters`, `metricSnapshot` (computed KPIs + supporting facts), plus a “retrieval hint” list (cluster + metric ids).
-   - Server retrieves relevant docs via embeddings similarity (in-repo JSON) and calls OpenRouter.
-   - Server returns structured response: insights, recommended actions, and alarm narrative suggestions.
+   - Browser sends to `/api/chat`: `messages`, `filters`, `metricSnapshot` (computed KPIs + supporting facts), plus a “retrieval hint” list (cluster + metric ids).
+   - Server retrieves relevant docs via `retrieveDocs`:
+     - Current MVP: keyword search over in-repo knowledge base docs
+     - Later: cosine similarity over in-repo embeddings (Option 1)
+   - Server streams the response back to the UI (assistant text + tool parts).
 
 ### Why Compute KPIs Client-Side (MVP)
 - Avoid serverless upload limits and complexity
@@ -132,17 +165,15 @@ Important: KPI values must come from real columns; if a KPI is not computable fr
 ## AI Integration Plan (OpenRouter)
 
 ### API Endpoint
-`POST /api/ai`
+`POST /api/chat` (streaming, tool calling)
 Body:
-- `question: string`
-- `filters: object`
-- `metricSnapshot: object` (computed KPIs with supporting facts)
+- `messages: UIMessage[]` (Vercel AI SDK UI message format)
+- `filters?: object`
+- `metricSnapshot?: object` (computed KPIs with supporting facts)
 - `activeCluster?: string`
 
 Response:
-- `answer: string` (markdown)
-- `keyInsights?: string[]`
-- `perMetric?: { metricId: string; alarm?: string; insight?: string; action?: string; confidence?: number }[]`
+- Streamed UI message chunks (assistant text + tool parts)
 
 ### Prompting Rules
 - Hard rule: AI must not invent KPI values; it can only use provided numbers.
@@ -180,10 +211,10 @@ Response:
 - Render progress bar vs threshold and show threshold logic inline
 
 ### M5: Ask AI + RAG-lite
-- Create `/api/ai` serverless function
+- Ensure `/api/chat` is deployed with env vars set
 - Add `rag/docs.json` + `rag/embeddings.f32` + `rag/embeddings.meta.json`
 - Implement `retrieveDocs` tool + LLM call (Vercel AI SDK + OpenRouter provider)
-- Wire Ask AI UI to call `/api/ai`
+- Wire Ask AI UI to call `/api/chat`
 
 ### M6: Key Insights Panel
 - Derive “top insights” from Red metrics + AI narratives

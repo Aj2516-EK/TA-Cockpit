@@ -3,7 +3,7 @@ import { streamText } from 'ai'
 import { z } from 'zod'
 import { KNOWLEDGE_BASE_DOCS } from './knowledge-base'
 import { getChatModel, requiredEnv } from './env'
-import { safeErrorMessage } from './errors'
+import { getPublicAiErrorMessage } from './errors'
 
 export const config = {
   runtime: 'edge',
@@ -90,10 +90,6 @@ export default async function handler(req: Request): Promise<Response> {
 
   // useCompletion (default streamProtocol="data") expects UI message chunks, so we return UI stream.
   return result.toUIMessageStreamResponse({
-    onError: (err) => {
-      const msg = safeErrorMessage(err)
-      if (msg.includes('Missing required env var')) return 'Server misconfigured (missing env vars).'
-      return 'An error occurred.'
-    },
+    onError: getPublicAiErrorMessage,
   })
 }

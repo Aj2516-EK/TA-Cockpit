@@ -25,7 +25,7 @@ const getMotionComponent = (element: keyof JSX.IntrinsicElements) => {
 };
 
 export interface TextShimmerProps {
-  children: string;
+  children?: string;
   as?: ElementType;
   className?: string;
   duration?: number;
@@ -33,7 +33,7 @@ export interface TextShimmerProps {
 }
 
 const ShimmerComponent = ({
-  children,
+  children = "Loading",
   as: Component = "p",
   className,
   duration = 2,

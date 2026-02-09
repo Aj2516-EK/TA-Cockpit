@@ -99,7 +99,9 @@ export function ChatWidget({
 
           {error && (
             <div className="mb-3 rounded-[14px] border border-rose-500/20 bg-rose-500/10 p-3 text-[13px] font-normal text-rose-700 dark:text-rose-200">
-              Something went wrong. If you are running locally via `npm run dev`, `/api/chat` may not be available.
+              {String(error.message || '').toLowerCase().includes('rate')
+                ? 'Rate limit hit upstream. Please retry in 30 to 60 seconds.'
+                : 'Something went wrong. If you are running locally, make sure you are using `vercel dev` (not `vite`).'}
             </div>
           )}
 
