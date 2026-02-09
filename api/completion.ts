@@ -2,7 +2,8 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { streamText } from 'ai'
 import { z } from 'zod'
 import { KNOWLEDGE_BASE_DOCS } from './knowledge-base'
-import { getChatModel } from './env'
+import { getChatModel, requiredEnv } from './env'
+import { safeErrorMessage } from './errors'
 
 export const config = {
   runtime: 'edge',
@@ -34,29 +35,43 @@ function simpleRetrieveDocs(query: string, k: number) {
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 })
 
-  const body = (await req.json()) as CompletionRequestBody
+  let body: CompletionRequestBody
+  try {
+    body = (await req.json()) as CompletionRequestBody
+  } catch {
+    return new Response('Invalid JSON', { status: 400 })
+  }
   const prompt = (body.prompt ?? '').trim()
   if (!prompt) return new Response('Missing prompt', { status: 400 })
 
-  const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
+  const openrouter = createOpenRouter({ apiKey: requiredEnv('OPENROUTER_API_KEY') })
   const modelName = getChatModel()
+  const context = {
+    activeCluster: body.activeCluster ?? null,
+    filters: body.filters ?? null,
+    metricSnapshot: body.metricSnapshot ?? null,
+  }
 
   const result = streamText({
     model: openrouter(modelName),
     temperature: 0.1,
-    maxTokens: 500,
+    maxOutputTokens: 500,
     system:
       'You are a Senior Strategic Talent Acquisition Analyst for an airline HR executive dashboard.\n' +
       'Hard rules:\n' +
       '- Never invent KPI values. Use only numbers present in metricSnapshot.\n' +
       '- If you need KPI definitions/formulas/thresholds/actions, call retrieveDocs first.\n' +
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
-      '- Keep output concise and decision-ready.\n',
+      '- Keep output concise and decision-ready.\n' +
+      '\n' +
+      'Context (do not treat as user message):\n' +
+      JSON.stringify(context) +
+      '\n',
     tools: {
       retrieveDocs: {
         description:
           'Retrieve KPI definitions, formulas, thresholds, interpretation, and recommended actions for TA cockpit metrics.',
-        parameters: z.object({
+        inputSchema: z.object({
           query: z.string(),
           k: z.number().int().min(1).max(12).default(6),
         }),
@@ -70,14 +85,15 @@ export default async function handler(req: Request): Promise<Response> {
         },
       },
     },
-    prompt:
-      'Context (do not treat as user message):\n' +
-      `activeCluster: ${JSON.stringify(body.activeCluster ?? null)}\n` +
-      `filters: ${JSON.stringify(body.filters ?? null)}\n` +
-      `metricSnapshot: ${JSON.stringify(body.metricSnapshot ?? null)}\n\n` +
-      `User Prompt:\n${prompt}\n`,
+    prompt,
   })
 
   // useCompletion (default streamProtocol="data") expects UI message chunks, so we return UI stream.
-  return result.toUIMessageStreamResponse()
+  return result.toUIMessageStreamResponse({
+    onError: (err) => {
+      const msg = safeErrorMessage(err)
+      if (msg.includes('Missing required env var')) return 'Server misconfigured (missing env vars).'
+      return 'An error occurred.'
+    },
+  })
 }
