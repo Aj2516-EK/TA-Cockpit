@@ -2,6 +2,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { streamText } from 'ai'
 import { z } from 'zod'
 import { RAG_DOCS } from './rag/docs'
+import { getChatModel } from './env'
 
 export const config = {
   runtime: 'edge',
@@ -38,10 +39,7 @@ export default async function handler(req: Request): Promise<Response> {
   if (!prompt) return new Response('Missing prompt', { status: 400 })
 
   const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
-  const modelName =
-    process.env.CHAT_MODEL ??
-    process.env.PRIMARY_MODEL ?? // legacy name (keep for backwards compatibility)
-    'openai/gpt-oss-120b:free'
+  const modelName = getChatModel()
 
   const result = streamText({
     model: openrouter(modelName),
