@@ -1,4 +1,4 @@
-# TA Intelligence Cockpit (Hackathon MVP)
+# TA Intelligence Cockpit
 
 Airline-style Talent Acquisition dashboard with RAG-scored metric tiles, filters, and an AI chat advisor grounded in the current KPI snapshot (aggregates only).
 
