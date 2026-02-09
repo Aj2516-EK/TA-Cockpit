@@ -57,7 +57,12 @@ export default async function handler(req: Request): Promise<Response> {
       '- Never invent KPI values. Use only numbers present in metricSnapshot.\n' +
       '- If you need KPI definitions, formulas, thresholds, or recommended actions, call retrieveDocs first.\n' +
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
-      '- Keep answers concise and decision-ready.\n',
+      '- Keep answers concise and decision-ready.\n' +
+      '\n' +
+      'Tool usage guidance:\n' +
+      '- If the user asks to change or view filters, call openFilters.\n' +
+      '- If the user asks to expand/open a specific metric tile, call expandMetric with the metricId from metricSnapshot.\n' +
+      '- If the user requests an export, email, or any irreversible action, call askForConfirmation before proceeding.\n',
     messages: await convertToModelMessages(body.messages),
     tools: {
       retrieveDocs: {
@@ -75,6 +80,24 @@ export default async function handler(req: Request): Promise<Response> {
             text: d.text,
           }))
         },
+      },
+
+      // Client-side tools (no execute): forwarded to the UI as tool parts.
+      openFilters: {
+        description: 'Open the filters panel in the UI.',
+        parameters: z.object({}),
+      },
+      expandMetric: {
+        description: 'Expand a metric tile in the UI by metricId (must come from metricSnapshot).',
+        parameters: z.object({
+          metricId: z.string().describe('Metric id from metricSnapshot'),
+        }),
+      },
+      askForConfirmation: {
+        description: 'Ask the user to confirm before taking an irreversible or sensitive action.',
+        parameters: z.object({
+          message: z.string().describe('The confirmation message to show the user.'),
+        }),
       },
     },
     // Provide current dashboard context as a final instruction message.

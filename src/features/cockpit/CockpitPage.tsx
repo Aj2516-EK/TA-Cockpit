@@ -113,7 +113,12 @@ export function CockpitPage() {
       </div>
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
-      <ChatWidget activeCluster={activeCluster} metricSnapshot={metricSnapshot} />
+      <ChatWidget
+        activeCluster={activeCluster}
+        metricSnapshot={metricSnapshot}
+        onOpenFilters={() => setFiltersOpen(true)}
+        onExpandMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: true }))}
+      />
     </div>
   )
 }
