@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useChat, type UseChatHelpers } from '@ai-sdk/react'
+import { useChat } from '@ai-sdk/react'
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai'
-import { readRef } from '../../../lib/ref'
 import type { ClusterId, Metric } from '../model'
 import type { CockpitUIMessage } from './tools'
 
@@ -22,64 +21,54 @@ export function useCockpitChat({
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
-  const addToolOutputRef = useRef<null | UseChatHelpers<CockpitUIMessage>['addToolOutput']>(null)
-  const contextRef = useRef({ activeCluster, metricSnapshot })
-
-  useEffect(() => {
-    contextRef.current = { activeCluster, metricSnapshot }
-  }, [activeCluster, metricSnapshot])
-
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        body: () => {
-          const ctx = readRef(contextRef)
-          return {
-            activeCluster: ctx.activeCluster,
-            metricSnapshot: ctx.metricSnapshot,
-            filters: null,
-          }
-        },
+        // Keep dashboard context out of the user-visible chat history.
+        // This is attached to every request server-side via the transport body.
+        body: () => ({ activeCluster, metricSnapshot, filters: null }),
       }),
-    [],
+    [activeCluster, metricSnapshot],
   )
 
   const chat = useChat<CockpitUIMessage>({
     transport,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-
-    // Run client-side tools that should auto-execute.
-    // Note: Always check toolCall.dynamic first for proper TS narrowing.
-    async onToolCall({ toolCall }) {
-      if (toolCall.dynamic) return
-      const addToolOutput = readRef(addToolOutputRef)
-      if (!addToolOutput) return
-
-      if (toolCall.toolName === 'openFilters') {
-        onOpenFilters()
-        addToolOutput({
-          tool: 'openFilters',
-          toolCallId: toolCall.toolCallId,
-          output: 'opened',
-        })
-        return
-      }
-
-      if (toolCall.toolName === 'expandMetric') {
-        onExpandMetric(toolCall.input.metricId)
-        addToolOutput({
-          tool: 'expandMetric',
-          toolCallId: toolCall.toolCallId,
-          output: 'expanded',
-        })
-      }
-    },
   })
 
+  // Auto-execute client-side tools by observing tool parts.
+  // This avoids ref access in render-time callbacks (eslint react-hooks/refs).
+  const { messages, addToolOutput } = chat
+  const handledToolCallIdsRef = useRef<Set<string>>(new Set())
   useEffect(() => {
-    addToolOutputRef.current = chat.addToolOutput
-  }, [chat.addToolOutput])
+    for (const m of messages) {
+      if (m.role !== 'assistant') continue
+      for (const part of m.parts) {
+        if (part.type !== 'tool-openFilters' && part.type !== 'tool-expandMetric') continue
+        if (part.state !== 'input-available') continue
+        if (handledToolCallIdsRef.current.has(part.toolCallId)) continue
+
+        handledToolCallIdsRef.current.add(part.toolCallId)
+
+        if (part.type === 'tool-openFilters') {
+          onOpenFilters()
+          addToolOutput({
+            tool: 'openFilters',
+            toolCallId: part.toolCallId,
+            output: 'opened',
+          })
+        } else {
+          onExpandMetric(part.input.metricId)
+          addToolOutput({
+            tool: 'expandMetric',
+            toolCallId: part.toolCallId,
+            output: 'expanded',
+          })
+        }
+      }
+    }
+  }, [messages, addToolOutput, onOpenFilters, onExpandMetric])
 
   return chat
 }

@@ -7,6 +7,7 @@ import { MetricsGrid } from './components/MetricsGrid'
 import { FiltersDrawer } from './components/FiltersDrawer'
 import { ChatWidget } from './components/ChatWidget'
 import { ClusterBrief } from './components/ClusterBrief'
+import { HealthScoreRing } from './components/HealthScoreRing'
 
 export function CockpitPage() {
   const [activeCluster, setActiveCluster] = useState<ClusterId>('readiness')
@@ -71,41 +72,40 @@ export function CockpitPage() {
                 datasetLabel="No dataset loaded (upload for demo)"
               />
 
-              <main className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
-                  <section className="rounded-[24px] border border-slate-900/10 bg-white/55 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
+              <main className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+                {/* Cluster header — full-width compact strip */}
+                <section className="flex flex-col gap-4 rounded-[24px] border border-slate-900/10 bg-white/55 px-5 py-4 shadow-sm sm:flex-row sm:items-center dark:border-white/10 dark:bg-white/5">
+                  <div className="min-w-0 flex-1">
                     <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                       Active Cluster
                     </div>
                     <div className="mt-1 text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
                       {currentCluster.title}
                     </div>
-                    <div className="mt-2 text-[13px] font-normal leading-relaxed text-slate-600 dark:text-slate-300">
+                    <div className="mt-1.5 text-[13px] font-normal leading-relaxed text-slate-600 dark:text-slate-300">
                       {currentCluster.description}
                     </div>
-                    <div className="mt-4 flex items-center gap-3">
-                      <div className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10">
-                        Health Score: <span className="font-bold text-slate-900 dark:text-white">{healthScore}</span>
-                      </div>
-                      <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
-                        Calculated from RAG status across KPIs
-                      </div>
-                    </div>
-                  </section>
-
-                  <div className="grid gap-4">
-                    <KeyInsightsPanel insights={keyInsights} />
-                    <ClusterBrief activeCluster={activeCluster} metricSnapshot={metricSnapshot} />
                   </div>
+                  <div className="flex items-center gap-4 sm:shrink-0">
+                    <HealthScoreRing score={healthScore} />
+                    <div className="text-[11px] font-normal leading-relaxed text-slate-500 dark:text-slate-400">
+                      Aggregated from RAG<br />status across all KPIs
+                    </div>
+                  </div>
+                </section>
+
+                {/* Insights + AI Brief — side by side */}
+                <div className="grid items-start gap-4 xl:grid-cols-2">
+                  <KeyInsightsPanel insights={keyInsights} />
+                  <ClusterBrief activeCluster={activeCluster} metricSnapshot={metricSnapshot} />
                 </div>
 
-                <section className="mt-4">
-                  <MetricsGrid
-                    metrics={currentMetrics}
-                    expanded={expanded}
-                    onToggleMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: !s[metricId] }))}
-                  />
-                </section>
+                {/* Metric cards */}
+                <MetricsGrid
+                  metrics={currentMetrics}
+                  expanded={expanded}
+                  onToggleMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: !s[metricId] }))}
+                />
               </main>
             </div>
           </div>
