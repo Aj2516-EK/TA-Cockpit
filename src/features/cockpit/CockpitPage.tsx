@@ -6,6 +6,7 @@ import { KeyInsightsPanel } from './components/KeyInsightsPanel'
 import { MetricsGrid } from './components/MetricsGrid'
 import { FiltersDrawer } from './components/FiltersDrawer'
 import { ChatWidget } from './components/ChatWidget'
+import { ClusterBrief } from './components/ClusterBrief'
 
 export function CockpitPage() {
   const [activeCluster, setActiveCluster] = useState<ClusterId>('readiness')
@@ -28,6 +29,19 @@ export function CockpitPage() {
 
   const currentCluster = clusters.find((c) => c.id === activeCluster)!
   const currentMetrics = metricsByCluster[activeCluster]
+  const metricSnapshot = useMemo(
+    () => ({
+      activeCluster,
+      metrics: currentMetrics.map((m) => ({
+        id: m.id,
+        title: m.title,
+        valueText: m.valueText,
+        thresholdText: m.thresholdText,
+        rag: m.rag,
+      })),
+    }),
+    [activeCluster, currentMetrics],
+  )
 
   const healthScore = useMemo(() => {
     const score = (rag: string) => (rag === 'green' ? 100 : rag === 'amber' ? 70 : 40)
@@ -79,7 +93,10 @@ export function CockpitPage() {
                     </div>
                   </section>
 
-                  <KeyInsightsPanel insights={keyInsights} />
+                  <div className="grid gap-4">
+                    <KeyInsightsPanel insights={keyInsights} />
+                    <ClusterBrief activeCluster={activeCluster} metricSnapshot={metricSnapshot} />
+                  </div>
                 </div>
 
                 <section className="mt-4">
@@ -96,7 +113,7 @@ export function CockpitPage() {
       </div>
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} />
-      <ChatWidget />
+      <ChatWidget activeCluster={activeCluster} metricSnapshot={metricSnapshot} />
     </div>
   )
 }
