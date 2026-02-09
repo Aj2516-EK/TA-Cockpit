@@ -99,10 +99,10 @@ export function ChatWidget({
                 <Icon name="auto_awesome" className="text-[20px]" />
               </span>
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   AI Advisor
                 </div>
-                <div className="text-[13px] font-extrabold text-slate-900 dark:text-white">Ask about metrics</div>
+                <div className="text-[14px] font-bold text-slate-900 dark:text-white">Ask about metrics</div>
               </div>
             </div>
             <button
@@ -119,16 +119,16 @@ export function ChatWidget({
             <StatusRow status={status} onStop={stop} />
 
             {error && (
-              <div className="mb-3 rounded-[18px] border border-rose-500/20 bg-rose-500/10 p-3 text-[12px] font-semibold text-rose-700 dark:text-rose-200">
+              <div className="mb-3 rounded-[18px] border border-rose-500/20 bg-rose-500/10 p-3 text-[13px] font-normal text-rose-700 dark:text-rose-200">
                 Something went wrong. If you are running locally via `npm run dev`, `/api/chat` may not be available.
               </div>
             )}
 
             <div className="space-y-3">
               {messages.length === 0 && (
-                <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[12px] font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[13px] font-normal text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
                   Ask about drivers, bottlenecks, or actions.
-                  <div className="mt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="mt-2 text-[12px] font-normal text-slate-500 dark:text-slate-400">
                     The assistant will use the current cluster and KPI snapshot.
                   </div>
                 </div>
@@ -148,12 +148,12 @@ export function ChatWidget({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask AI: trends, drivers, recommendations..."
-                  className="w-full bg-transparent text-[12px] font-bold text-slate-900 placeholder:text-slate-400 outline-none dark:text-white"
+                  className="w-full bg-transparent text-[13px] font-normal text-slate-900 placeholder:text-slate-400 outline-none dark:text-white"
                   disabled={status !== 'ready'}
                 />
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-black uppercase tracking-widest text-white transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                   disabled={status !== 'ready'}
                   aria-label="Send message"
                 >
@@ -172,13 +172,13 @@ function StatusRow({ status, onStop }: { status: string; onStop: () => void }) {
   if (status !== 'submitted' && status !== 'streaming') return null
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
-      <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+      <div className="text-[12px] font-normal text-slate-500 dark:text-slate-400">
         {status === 'submitted' ? 'Connecting...' : 'Streaming...'}
       </div>
       <button
         type="button"
         onClick={onStop}
-        className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+        className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
       >
         Stop
       </button>
@@ -192,7 +192,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[85%] rounded-[18px] border px-3 py-2 text-[12px] font-semibold leading-snug',
+          'max-w-[85%] rounded-[18px] border px-3 py-2 text-[13px] font-normal leading-relaxed',
           isUser
             ? 'border-[color:var(--ta-primary)]/25 bg-[color:var(--ta-primary)]/10 text-slate-900 dark:text-white'
             : 'border-slate-900/10 bg-white/60 text-slate-800 dark:border-white/10 dark:bg-white/5 dark:text-slate-200',
@@ -202,14 +202,14 @@ function MessageBubble({ message }: { message: UIMessage }) {
           if (part.type === 'text') return <span key={idx}>{part.text}</span>
           if (part.type === 'tool-invocation') {
             return (
-              <div key={idx} className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              <div key={idx} className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                 Retrieving context...
               </div>
             )
           }
           if (part.type === 'tool-result') {
             return (
-              <div key={idx} className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              <div key={idx} className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                 Context retrieved.
               </div>
             )

@@ -34,10 +34,10 @@ export function FiltersDrawer({
                 <Icon name="filter_list" className="text-[20px]" />
               </span>
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   Filters
                 </div>
-                <div className="text-[13px] font-extrabold text-slate-900 dark:text-white">Dataset slicing</div>
+                <div className="text-[14px] font-bold text-slate-900 dark:text-white">Dataset slicing</div>
               </div>
             </div>
             <button
@@ -51,9 +51,9 @@ export function FiltersDrawer({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-            <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[12px] font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+            <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[13px] font-normal text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
               UI-only placeholder.
-              <div className="mt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <div className="mt-2 text-[12px] font-normal text-slate-500 dark:text-slate-400">
                 Next: populate options from uploaded dataset (Business Unit, Role, Location, Gender, date range, etc.).
               </div>
             </div>
@@ -63,13 +63,13 @@ export function FiltersDrawer({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="flex-1 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                className="flex-1 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
               >
                 Clear
               </button>
               <button
                 type="button"
-                className="flex-1 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-black uppercase tracking-widest text-white transition hover:brightness-110 active:scale-[0.98]"
+                className="flex-1 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 active:scale-[0.98]"
               >
                 Apply
               </button>
@@ -80,4 +80,3 @@ export function FiltersDrawer({
     </>
   )
 }
-

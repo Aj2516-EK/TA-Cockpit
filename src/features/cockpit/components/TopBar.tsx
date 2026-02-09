@@ -20,21 +20,21 @@ export function TopBar({
       )}
     >
       <div className="min-w-0">
-        <div className="truncate text-[11px] font-black uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+        <div className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
           Talent Acquisition Intelligence Cockpit
         </div>
-        <div className="truncate text-[14px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <div className="truncate text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
           Executive KPI Cluster View
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="hidden items-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold text-slate-700 ring-1 ring-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
+        <span className="hidden items-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-medium text-slate-700 ring-1 ring-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
           <Icon name="dataset" className="text-[18px]" />
           <span className="max-w-[220px] truncate">{datasetLabel}</span>
         </span>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_16px_40px_rgba(33,150,243,0.22)] transition hover:brightness-110">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7">
           <Icon name="upload" className="text-[18px]" />
           <span className="hidden sm:inline">Upload</span>
           <input type="file" className="hidden" />
@@ -44,14 +44,15 @@ export function TopBar({
           type="button"
           onClick={onOpenFilters}
           className={cn(
-            'inline-flex h-10 w-10 items-center justify-center rounded-2xl',
+            'inline-flex items-center gap-2 rounded-2xl px-3 py-2',
             'bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10',
             'dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
           )}
           aria-label="Open filters"
           title="Filters"
         >
-          <Icon name="filter_list" className="text-[20px]" />
+          <Icon name="filter_list" className="text-[18px]" />
+          <span className="hidden text-[11px] font-bold sm:inline">Filters</span>
         </button>
 
         <button
@@ -68,7 +69,7 @@ export function TopBar({
           <Icon name={darkMode ? 'light_mode' : 'dark_mode'} className="text-[20px]" />
         </button>
 
-        <span className="hidden items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20 dark:bg-[color:var(--ta-primary)]/15 sm:inline-flex">
+        <span className="hidden items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20 dark:bg-[color:var(--ta-primary)]/15 sm:inline-flex">
           <Icon name="account_circle" className="text-[18px]" />
           EVP-HR
         </span>
@@ -76,4 +77,3 @@ export function TopBar({
     </header>
   )
 }
-

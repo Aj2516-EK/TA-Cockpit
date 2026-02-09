@@ -21,7 +21,7 @@ export function SidebarNav({
         'h-dvh shrink-0 overflow-hidden border-r border-slate-900/10 bg-white/50 backdrop-blur',
         'dark:border-white/10 dark:bg-slate-950/30',
         'transition-[width] duration-200',
-        collapsed ? 'w-[72px]' : 'w-[260px]',
+        collapsed ? 'w-[72px]' : 'w-[192px]',
       )}
     >
       <div className="flex h-full flex-col">
@@ -31,10 +31,9 @@ export function SidebarNav({
               <Icon name="flight_takeoff" className="text-[20px]" />
             </span>
             <div className="leading-tight">
-              <div className="text-[10px] font-black uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                 TA Cockpit
               </div>
-              <div className="text-[12px] font-extrabold text-slate-900 dark:text-white">Clusters</div>
             </div>
           </div>
 
@@ -81,14 +80,9 @@ export function SidebarNav({
                 >
                   <Icon name={c.icon} className="text-[20px]" />
                 </span>
-                <div className={cn('min-w-0 flex-1', collapsed && 'hidden')}>
-                  <div className="truncate text-[12px] font-extrabold text-slate-900 dark:text-white">
-                    {c.shortLabel}
-                  </div>
-                  <div className="truncate text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    {c.title}
-                  </div>
-                </div>
+                <span className={cn('truncate text-[13px] font-medium text-slate-900 dark:text-white', collapsed && 'hidden')}>
+                  {c.shortLabel}
+                </span>
               </button>
             )
           })}
@@ -96,10 +90,10 @@ export function SidebarNav({
 
         <div className={cn('border-t border-slate-900/10 p-3 dark:border-white/10', collapsed && 'px-2')}>
           <div className={cn('flex items-center gap-3', collapsed ? 'justify-center' : 'justify-between')}>
-            <div className={cn('text-[10px] font-black uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400', collapsed && 'hidden')}>
+            <div className={cn('text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400', collapsed && 'hidden')}>
               Demo Mode
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-1 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-2 py-1 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
               Live
             </span>
@@ -109,4 +103,3 @@ export function SidebarNav({
     </aside>
   )
 }
-

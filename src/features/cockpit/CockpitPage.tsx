@@ -74,20 +74,20 @@ export function CockpitPage() {
               <main className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
                 <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
                   <section className="rounded-[24px] border border-slate-900/10 bg-white/55 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-                    <div className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                       Active Cluster
                     </div>
-                    <div className="mt-1 text-[16px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    <div className="mt-1 text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
                       {currentCluster.title}
                     </div>
-                    <div className="mt-2 text-[13px] font-semibold leading-snug text-slate-600 dark:text-slate-300">
+                    <div className="mt-2 text-[13px] font-normal leading-relaxed text-slate-600 dark:text-slate-300">
                       {currentCluster.description}
                     </div>
                     <div className="mt-4 flex items-center gap-3">
-                      <div className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-600 ring-1 ring-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10">
-                        Health Score: <span className="text-slate-900 dark:text-white">{healthScore}</span>
+                      <div className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10">
+                        Health Score: <span className="font-bold text-slate-900 dark:text-white">{healthScore}</span>
                       </div>
-                      <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                         Calculated from RAG status across KPIs
                       </div>
                     </div>

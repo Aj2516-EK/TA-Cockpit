@@ -27,16 +27,16 @@ export function MetricCard({
           <span className={cn('inline-flex h-10 w-10 items-center justify-center rounded-2xl', ragPillClass(metric.rag))}>
             <Icon name={metric.icon} className="text-[20px]" />
           </span>
-          <span className={cn('rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-widest', ragPillClass(metric.rag))}>
+          <span className={cn('rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider', ragPillClass(metric.rag))}>
             {metric.rag}
           </span>
         </div>
 
         <div className="mt-3">
-          <div className="text-[12px] font-extrabold tracking-tight text-slate-900 dark:text-white">{metric.title}</div>
+          <div className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">{metric.title}</div>
           <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-[22px] font-black tracking-tight text-slate-900 dark:text-white">{metric.valueText}</div>
-            <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300">Target: {metric.thresholdText}</div>
+            <div className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white">{metric.valueText}</div>
+            <div className="text-[11px] font-medium text-slate-600 dark:text-slate-300">Target: {metric.thresholdText}</div>
           </div>
         </div>
       </button>
@@ -50,7 +50,7 @@ export function MetricCard({
 
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-black uppercase tracking-widest text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
             >
               <Icon name="info" className="text-[18px]" />
               Metric Definition (Next)
@@ -73,14 +73,14 @@ function Section({
 }) {
   return (
     <div className="rounded-[18px] border border-slate-900/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
-      <div className="text-[10px] font-black uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
       <div
         className={cn(
-          'mt-1 text-[12px] leading-snug text-slate-700 dark:text-slate-300',
-          tone === 'strong' && 'font-bold text-slate-800 dark:text-slate-200',
-          tone !== 'strong' && 'font-semibold',
+          'mt-1 text-[13px] leading-relaxed text-slate-700 dark:text-slate-300',
+          tone === 'strong' && 'font-medium text-slate-800 dark:text-slate-200',
+          tone !== 'strong' && 'font-normal',
         )}
       >
         {value}
