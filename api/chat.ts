@@ -2,6 +2,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { convertToModelMessages, streamText, type UIMessage } from 'ai'
 import { z } from 'zod'
 import { RAG_DOCS, type RagDoc } from './rag/docs'
+import { getChatModel } from './env'
 
 export const config = {
   runtime: 'edge',
@@ -44,7 +45,7 @@ export default async function handler(req: Request): Promise<Response> {
     apiKey: process.env.OPENROUTER_API_KEY,
   })
 
-  const modelName = process.env.PRIMARY_MODEL ?? 'openai/gpt-oss-120b:free'
+  const modelName = getChatModel()
 
   const result = streamText({
     model: openrouter(modelName),
@@ -87,4 +88,3 @@ export default async function handler(req: Request): Promise<Response> {
 
   return result.toUIMessageStreamResponse()
 }
-

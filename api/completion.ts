@@ -38,7 +38,10 @@ export default async function handler(req: Request): Promise<Response> {
   if (!prompt) return new Response('Missing prompt', { status: 400 })
 
   const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY })
-  const modelName = process.env.PRIMARY_MODEL ?? 'openai/gpt-oss-120b:free'
+  const modelName =
+    process.env.CHAT_MODEL ??
+    process.env.PRIMARY_MODEL ?? // legacy name (keep for backwards compatibility)
+    'openai/gpt-oss-120b:free'
 
   const result = streamText({
     model: openrouter(modelName),
@@ -80,4 +83,3 @@ export default async function handler(req: Request): Promise<Response> {
   // useCompletion (default streamProtocol="data") expects UI message chunks, so we return UI stream.
   return result.toUIMessageStreamResponse()
 }
-
