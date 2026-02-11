@@ -6,6 +6,7 @@ export function TopBar({
   onToggleDarkMode,
   onOpenFilters,
   datasetLabel,
+  isUploading,
   onUpload,
   onOpenDataInspector,
   onOpenCharts,
@@ -14,6 +15,7 @@ export function TopBar({
   onToggleDarkMode: () => void
   onOpenFilters: () => void
   datasetLabel: string
+  isUploading: boolean
   onUpload: (file: File) => void
   onOpenDataInspector: () => void
   onOpenCharts: () => void
@@ -40,13 +42,32 @@ export function TopBar({
           <span className="max-w-[220px] truncate">{datasetLabel}</span>
         </span>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7">
-          <Icon name="upload" className="text-[18px]" />
-          <span className="hidden sm:inline">Upload</span>
+        {isUploading && (
+          <span className="hidden items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-semibold text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25 dark:bg-[color:var(--ta-primary)]/15 sm:inline-flex">
+            <span className="inline-flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-[color:var(--ta-primary)]/30 border-t-[color:var(--ta-primary)]" />
+            Uploading file
+          </span>
+        )}
+
+        <label
+          className={cn(
+            'inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-wider ring-1 transition',
+            isUploading
+              ? 'cursor-not-allowed bg-[color:var(--ta-primary)]/10 text-[color:var(--ta-primary)] ring-[color:var(--ta-primary)]/25'
+              : 'cursor-pointer bg-slate-900/5 text-slate-700 ring-slate-900/10 hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
+          )}
+        >
+          {isUploading ? (
+            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current/35 border-t-current" />
+          ) : (
+            <Icon name="upload" className="text-[18px]" />
+          )}
+          <span className="hidden sm:inline">{isUploading ? 'Uploading...' : 'Upload'}</span>
           <input
             type="file"
             className="hidden"
             accept=".xlsx,.xls,.csv"
+            disabled={isUploading}
             onChange={(e) => {
               const f = e.currentTarget.files?.[0]
               if (!f) return

@@ -11,7 +11,11 @@ export function requiredEnv(name: string): string {
 }
 
 export function getChatModel(): string {
-  return getEnv('CHAT_MODEL') ?? getEnv('PRIMARY_MODEL') ?? 'openai/gpt-oss-120b:free'
+  const configured = getEnv('CHAT_MODEL')?.trim()
+  if (!configured) return 'openai/gpt-4.1'
+  // Guardrail: migrate away from legacy free model even if stale env is injected.
+  if (configured === 'openai/gpt-oss-120b:free') return 'openai/gpt-4.1'
+  return configured
 }
 
 export function getEmbeddingModel(): string {

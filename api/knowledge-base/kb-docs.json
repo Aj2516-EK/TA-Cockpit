@@ -11,7 +11,7 @@
     "title": "Curated Dataset Profile v1",
     "cluster": "global",
     "tags": ["dataset", "qa", "baseline", "curated"],
-    "text": "Curated test dataset baseline: requisitions=8000, candidates=140000, application_pipeline=120000, recruiter_activity=180000, interview_offer=90000, hiring_cost=8000, job_posting_analytics=8000. Referential integrity: candidate join coverage 100 percent, requisition join coverage 100 percent. Stage aging sample size=82419 with p50=10 days and p90=17 days. Status mix: active 56.94 percent, rejected 26.02 percent, hired 17.04 percent."
+    "text": "Dataset profile is dynamic and depends on the currently uploaded workbook and active filters. Use runtime context (metricSnapshot and insightContext) for current row counts, status mix, join coverage, funnel shape, and trend deltas. This document is guidance only and must not be treated as current uploaded-data truth."
   },
   {
     "id": "global.glossary.kpi_fields",

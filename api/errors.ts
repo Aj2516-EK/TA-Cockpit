@@ -48,6 +48,10 @@ export function getPublicAiErrorMessage(err: unknown): string {
     return 'Rate limit hit upstream. Please retry in 30 to 60 seconds.'
   }
 
+  if (hay.includes('aborted') || hay.includes('timeout') || hay.includes('timed out')) {
+    return 'Model connection timed out. Please retry, or switch to a lower-latency model.'
+  }
+
   if (hay.includes('no endpoints found matching your data policy') || hay.includes('free model publication')) {
     return 'This model is blocked by your OpenRouter privacy/data policy. Update privacy settings or switch CHAT_MODEL.'
   }

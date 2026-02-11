@@ -7,13 +7,14 @@ import { getPublicAiErrorMessage } from './errors'
 import { retrieveDocs } from './rag'
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'edge',
 }
 
 type ChatRequestBody = {
   messages: UIMessage[]
   activeCluster?: string
   metricSnapshot?: unknown
+  insightContext?: unknown
   filters?: unknown
 }
 
@@ -35,27 +36,42 @@ export default async function handler(req: Request): Promise<Response> {
   const openrouter = createOpenRouter({ apiKey: requiredEnv('OPENROUTER_API_KEY') })
 
   const modelName = getChatModel()
+  const fallbackModels = Array.from(new Set([modelName, 'openai/gpt-4o-mini']))
   const context = {
     activeCluster: body.activeCluster ?? null,
     filters: body.filters ?? null,
     metricSnapshot: body.metricSnapshot ?? null,
+    insightContext: body.insightContext ?? null,
   }
   const metricCount = Array.isArray((context.metricSnapshot as { metrics?: unknown[] } | null)?.metrics)
     ? ((context.metricSnapshot as { metrics?: unknown[] }).metrics?.length ?? 0)
     : 0
   console.info(
-    `[chat:${reqId}] start model=${modelName} messages=${body.messages.length} cluster=${String(context.activeCluster)} metrics=${metricCount}`,
+    `[chat:${reqId}] start model=${modelName} fallbacks=${fallbackModels.join(',')} messages=${body.messages.length} cluster=${String(context.activeCluster)} metrics=${metricCount}`,
   )
 
+  // Prevent indefinite "connecting" states when the upstream provider stalls.
+  const abortCtrl = new AbortController()
+  const timeoutMs = 45_000
+  const timeout = setTimeout(() => abortCtrl.abort(), timeoutMs)
+
   const result = streamText({
-    model: openrouter(modelName),
+    model: openrouter(modelName, {
+      extraBody: {
+        // Let OpenRouter route to next model if primary is queued/unavailable.
+        models: fallbackModels,
+      },
+    }),
     temperature: 0.1,
     maxOutputTokens: 700,
+    abortSignal: abortCtrl.signal,
     system:
       'You are a Senior Strategic Talent Acquisition Analyst for an airline HR executive dashboard.\n' +
       'Hard rules:\n' +
       '- Never invent KPI values. Use only numbers present in metricSnapshot.\n' +
+      '- For data-specific analysis, prioritize insightContext (derived from current uploaded dataset and active filters).\n' +
       '- If you need KPI definitions, formulas, thresholds, or recommended actions, call retrieveDocs first.\n' +
+      '- Treat any static dataset profile in retrieved docs as background-only, not as current uploaded data.\n' +
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
       '- Keep answers concise and decision-ready.\n' +
       '\n' +
@@ -108,9 +124,17 @@ export default async function handler(req: Request): Promise<Response> {
         }),
       },
     },
+    onFinish: ({ finishReason }) => {
+      clearTimeout(timeout)
+      console.info(`[chat:${reqId}] finished model=${modelName} reason=${finishReason}`)
+    },
   })
 
   return result.toUIMessageStreamResponse({
-    onError: getPublicAiErrorMessage,
+    onError: (err) => {
+      clearTimeout(timeout)
+      console.error(`[chat:${reqId}] stream error model=${modelName}`, err)
+      return getPublicAiErrorMessage(err)
+    },
   })
 }

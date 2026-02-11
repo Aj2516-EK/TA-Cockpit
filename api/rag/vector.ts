@@ -1,9 +1,7 @@
-import fs from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { KnowledgeBaseDoc } from '../knowledge-base'
 import { getEmbeddingModel, getOpenRouterApiKey, getOpenRouterAppName, getOpenRouterSiteUrl } from '../env'
 import type { EmbeddingsMeta } from './types'
+import embeddingsMeta from './embeddings.meta.json'
 
 type VectorIndex = {
   meta: EmbeddingsMeta
@@ -13,9 +11,6 @@ type VectorIndex = {
 
 let cachedIndex: VectorIndex | null = null
 let attemptedLoad = false
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 function buildNorms(matrix: Float32Array, dims: number, count: number): Float32Array {
   const norms = new Float32Array(count)
@@ -35,15 +30,27 @@ function loadVectorIndex(): VectorIndex | null {
   if (attemptedLoad) return cachedIndex
   attemptedLoad = true
 
-  const metaPath = path.join(__dirname, 'embeddings.meta.json')
-  const binPath = path.join(__dirname, 'embeddings.f32')
-  if (!fs.existsSync(metaPath) || !fs.existsSync(binPath)) return null
-
-  const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8')) as EmbeddingsMeta
+  const meta = embeddingsMeta as EmbeddingsMeta
   if (!meta || !Number.isFinite(meta.dims) || !Number.isFinite(meta.count) || !Array.isArray(meta.ids)) return null
   if (meta.count <= 0 || meta.dims <= 0) return null
 
-  const bin = fs.readFileSync(binPath)
+  // The binary embeddings file requires node:fs to read.
+  // In edge runtime this is unavailable; keyword fallback will be used instead.
+  let bin: Buffer
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('node:fs') as typeof import('node:fs')
+    const path = require('node:path') as typeof import('node:path')
+    const { fileURLToPath } = require('node:url') as typeof import('node:url')
+    const dir = path.dirname(fileURLToPath(import.meta.url))
+    const binPath = path.join(dir, 'embeddings.f32')
+    if (!fs.existsSync(binPath)) return null
+    bin = fs.readFileSync(binPath)
+  } catch {
+    // node:fs not available (edge runtime) — skip vector retrieval.
+    return null
+  }
+
   const floatCount = Math.floor(bin.byteLength / 4)
   const matrix = new Float32Array(bin.buffer, bin.byteOffset, floatCount)
   if (matrix.length !== meta.count * meta.dims) {
@@ -60,29 +67,57 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const ctrl = new AbortController()
+  const timeout = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 async function embedQuery(query: string): Promise<Float32Array> {
   const apiKey = getOpenRouterApiKey()
   const model = getEmbeddingModel()
   const referer = getOpenRouterSiteUrl()
   const appName = getOpenRouterAppName()
+  const timeoutMs = 8_000
   let lastError: Error | null = null
 
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch('https://openrouter.ai/api/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        ...(referer ? { 'HTTP-Referer': referer } : {}),
-        ...(appName ? { 'X-Title': appName } : {}),
-      },
-      body: JSON.stringify({
-        model,
-        input: query,
-        encoding_format: 'float',
-        input_type: 'query',
-      }),
-    })
+    let res: Response
+    try {
+      res = await fetchWithTimeout(
+        'https://openrouter.ai/api/v1/embeddings',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            ...(referer ? { 'HTTP-Referer': referer } : {}),
+            ...(appName ? { 'X-Title': appName } : {}),
+          },
+          body: JSON.stringify({
+            model,
+            input: query,
+            encoding_format: 'float',
+            input_type: 'query',
+          }),
+        },
+        timeoutMs,
+      )
+    } catch (err) {
+      const isAbort = err instanceof DOMException && err.name === 'AbortError'
+      lastError = new Error(
+        isAbort ? `Embedding API timeout after ${timeoutMs}ms` : `Embedding API request failed: ${String(err)}`,
+      )
+      if (attempt < 3) {
+        await sleep(200 * 2 ** (attempt - 1))
+        continue
+      }
+      throw lastError
+    }
 
     if (!res.ok) {
       const text = await res.text()
@@ -135,6 +170,9 @@ export async function vectorRetrieveDocs(
   query: string,
   k: number,
 ): Promise<KnowledgeBaseDoc[] | null> {
+  // Skip expensive embedding lookup for trivial/short prompts.
+  if ((query ?? '').trim().length < 8) return null
+
   const index = loadVectorIndex()
   if (!index) return null
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { ClusterId, Metric } from '../model'
@@ -12,6 +12,7 @@ export function ClusterBrief({
   filters,
   insightContext,
   contextVersion,
+  autoGenerateEnabled,
 }: {
   activeCluster: ClusterId
   metricSnapshot: {
@@ -21,9 +22,11 @@ export function ClusterBrief({
   filters: Filters
   insightContext: InsightContext | null
   contextVersion: number
+  autoGenerateEnabled: boolean
 }) {
-  const [lastGeneratedContextVersion, setLastGeneratedContextVersion] = useState<number | null>(null)
-  const stale = lastGeneratedContextVersion != null && lastGeneratedContextVersion !== contextVersion
+  const contextKey = `${activeCluster}:${contextVersion}`
+  const [lastGeneratedContextKey, setLastGeneratedContextKey] = useState<string | null>(null)
+  const stale = lastGeneratedContextKey != null && lastGeneratedContextKey !== contextKey
 
   const { data, generate, isLoading, error, stop } = useClusterInsights({
     activeCluster,
@@ -34,8 +37,24 @@ export function ClusterBrief({
 
   async function onGenerate() {
     const ok = await generate()
-    if (ok) setLastGeneratedContextVersion(contextVersion)
+    if (ok) setLastGeneratedContextKey(contextKey)
   }
+
+  useEffect(() => {
+    if (!autoGenerateEnabled) return
+    if (isLoading) return
+    if (lastGeneratedContextKey === contextKey) return
+
+    let cancelled = false
+    ;(async () => {
+      const ok = await generate()
+      if (!cancelled && ok) setLastGeneratedContextKey(contextKey)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [autoGenerateEnabled, contextKey, generate, isLoading, lastGeneratedContextKey])
 
   const formattedText = useMemo(() => {
     if (!data) return ''

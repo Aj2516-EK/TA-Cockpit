@@ -5,6 +5,7 @@ import type { ClusterId, Metric } from '../model'
 import { useCockpitChat } from '../chat/useCockpitChat'
 import { ChatParts } from '../chat/ChatParts'
 import type { CockpitUIMessage } from '../chat/tools'
+import type { InsightContext } from '../runtime-data/insights'
 import type { Filters } from '../runtime-data/types'
 
 type DebugLog = {
@@ -17,6 +18,7 @@ type DebugLog = {
 export function ChatWidget({
   activeCluster,
   metricSnapshot,
+  insightContext,
   filters,
   contextVersion,
   onOpenFilters,
@@ -27,6 +29,7 @@ export function ChatWidget({
     activeCluster: ClusterId
     metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag' | 'supportingFacts'>>
   }
+  insightContext: InsightContext | null
   filters: Filters
   contextVersion: number
   onOpenFilters: () => void
@@ -38,6 +41,7 @@ export function ChatWidget({
   const { messages, sendMessage, status, stop, error, addToolOutput } = useCockpitChat({
     activeCluster,
     metricSnapshot,
+    insightContext,
     filters,
     onOpenFilters,
     onExpandMetric,
@@ -82,6 +86,57 @@ export function ChatWidget({
     [pushLog],
   )
 
+  const runChatApiProbe = useCallback(async () => {
+    const ctrl = new AbortController()
+    const timeout = window.setTimeout(() => ctrl.abort(), 15_000)
+    const startedAt = performance.now()
+
+    try {
+      pushLog('Chat API probe', 'POST /api/chat (timeout 15s)')
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: ctrl.signal,
+        body: JSON.stringify({
+          messages: [
+            {
+              id: `probe-${Date.now()}`,
+              role: 'user',
+              parts: [{ type: 'text', text: 'Reply with exactly: pong' }],
+            },
+          ],
+          activeCluster,
+          metricSnapshot,
+          insightContext,
+          filters,
+        }),
+      })
+
+      const elapsed = Math.round(performance.now() - startedAt)
+      if (!res.ok) {
+        const text = await res.text()
+        pushLog('Chat API probe failed', `status=${res.status} in ${elapsed}ms | ${text.slice(0, 220)}`, 'error')
+        return
+      }
+
+      if (!res.body) {
+        pushLog('Chat API probe failed', `status=200 in ${elapsed}ms | empty response body`, 'warn')
+        return
+      }
+
+      const reader = res.body.getReader()
+      const first = await reader.read()
+      const chunkLen = first.value?.length ?? 0
+      pushLog('Chat API probe OK', `status=200 in ${elapsed}ms | firstChunkBytes=${chunkLen}`)
+      reader.releaseLock()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      pushLog('Chat API probe error', msg, 'error')
+    } finally {
+      window.clearTimeout(timeout)
+    }
+  }, [activeCluster, filters, insightContext, metricSnapshot, pushLog])
+
   useEffect(() => {
     if (!open) return
     const t = window.setTimeout(() => inputRef.current?.focus(), 50)
@@ -103,7 +158,8 @@ export function ChatWidget({
 
   useEffect(() => {
     if (prevStatusRef.current === status) return
-    const tLog = window.setTimeout(() => pushLog('Status changed', `${prevStatusRef.current} -> ${status}`), 0)
+    const prev = prevStatusRef.current
+    const tLog = window.setTimeout(() => pushLog('Status changed', `${prev} -> ${status}`), 0)
     prevStatusRef.current = status
     return () => window.clearTimeout(tLog)
   }, [status, pushLog])
@@ -126,11 +182,25 @@ export function ChatWidget({
 
   useEffect(() => {
     if (status !== 'submitted') return
+    const tNow = window.setTimeout(() => {
+      void runHealthCheck('request_start')
+    }, 0)
     const t = window.setTimeout(() => {
       void runHealthCheck('connecting>4s')
     }, 4000)
-    return () => window.clearTimeout(t)
-  }, [status, runHealthCheck])
+    const tWarn = window.setTimeout(() => {
+      pushLog(
+        'Still connecting',
+        'No model response after 12s. This is usually provider queueing, timeout, or policy block.',
+        'warn',
+      )
+    }, 12_000)
+    return () => {
+      window.clearTimeout(tNow)
+      window.clearTimeout(t)
+      window.clearTimeout(tWarn)
+    }
+  }, [status, runHealthCheck, pushLog])
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -232,6 +302,13 @@ export function ChatWidget({
                     className="rounded-xl bg-slate-900/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
                   >
                     Check API Health
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void runChatApiProbe()}
+                    className="rounded-xl bg-slate-900/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                  >
+                    Probe Chat API
                   </button>
                   <button
                     type="button"
@@ -345,7 +422,8 @@ function StatusRow({
   status: string
   onStop: () => void
 }) {
-  if (status !== 'submitted' && status !== 'streaming') return null
+  // Hide pending-connection UI to avoid "stuck connecting" perception.
+  if (status !== 'streaming') return null
   return (
     <div className="mb-3 rounded-[14px] border border-[color:var(--ta-primary)]/20 bg-[color:var(--ta-primary)]/8 p-3">
       <div className="flex items-start justify-between gap-3">
@@ -355,11 +433,9 @@ function StatusRow({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--ta-primary)]/55" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[color:var(--ta-primary)]" />
             </span>
-            {status === 'submitted' ? 'AI is connecting' : 'AI is generating response'}
+            AI is generating response
           </div>
-          <div className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">
-            {status === 'submitted' ? 'Establishing model connection...' : 'Receiving tokens...'}
-          </div>
+          <div className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">Receiving tokens...</div>
           <div className="mt-2 overflow-hidden rounded-full bg-slate-900/10 dark:bg-white/10">
             <div className="h-1.5 w-2/5 rounded-full bg-[linear-gradient(90deg,rgba(33,150,243,0.18),rgba(33,150,243,0.9),rgba(33,150,243,0.18))] [animation:ta-chat-shimmer_1.4s_ease-in-out_infinite]" />
           </div>

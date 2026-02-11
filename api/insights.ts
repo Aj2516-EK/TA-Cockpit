@@ -5,7 +5,7 @@ import { getChatModel, requiredEnv } from './env'
 import { getPublicAiErrorMessage } from './errors'
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'edge',
 }
 
 const MetricSnapshotSchema = z.object({
@@ -61,6 +61,7 @@ function fallbackInsights(metrics: MetricSnapshot[]) {
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 })
+  const reqId = Math.random().toString(36).slice(2, 10)
 
   let bodyRaw: unknown
   try {
@@ -78,6 +79,9 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     const openrouter = createOpenRouter({ apiKey: requiredEnv('OPENROUTER_API_KEY') })
     const modelName = getChatModel()
+    console.info(
+      `[insights:${reqId}] start model=${modelName} cluster=${String(activeCluster ?? 'unknown')} metrics=${metrics.length}`,
+    )
 
     const result = await generateObject({
       model: openrouter(modelName),
@@ -106,6 +110,7 @@ export default async function handler(req: Request): Promise<Response> {
       ...result.object,
       generatedAt: new Date().toISOString(),
       source: 'llm',
+      model: modelName,
     })
   } catch (err) {
     console.warn('[insights] falling back after LLM error', err)
@@ -120,4 +125,3 @@ export default async function handler(req: Request): Promise<Response> {
     )
   }
 }
-

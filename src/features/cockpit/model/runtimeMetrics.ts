@@ -1,6 +1,7 @@
 import type { ClusterId, Metric, Rag } from './types'
 import { metricTemplatesByCluster } from './sampleData'
 import type { ApplicationFactRow } from '../runtime-data/types'
+import { gapToTargetText, meaningForMetric } from './metricExplain'
 
 export type ComputedMetric = Pick<Metric, 'valueText' | 'valueNum' | 'thresholdText' | 'rag' | 'supportingFacts'>
 
@@ -95,6 +96,33 @@ function uniqBy<T>(items: T[], key: (t: T) => string | null | undefined): T[] {
     out.push(it)
   }
   return out
+}
+
+function buildNarrative(metric: Metric): Pick<Metric, 'alarm' | 'insight' | 'action'> {
+  const gap = gapToTargetText(metric)
+  const meaning = meaningForMetric(metric.id).meaning
+  const fact = metric.supportingFacts?.[0]
+
+  const alarm =
+    metric.rag === 'red'
+      ? `${metric.title} is off target (${metric.valueText} vs ${metric.thresholdText}).`
+      : metric.rag === 'amber'
+        ? `${metric.title} is near threshold (${metric.valueText} vs ${metric.thresholdText}).`
+        : `${metric.title} is on target (${metric.valueText} vs ${metric.thresholdText}).`
+
+  const insightParts = [meaning]
+  if (gap) insightParts.push(gap)
+  if (fact) insightParts.push(`Evidence: ${fact}.`)
+  const insight = insightParts.join(' ')
+
+  const action =
+    metric.rag === 'red'
+      ? `Prioritize this KPI immediately: assign an owner, run a 7-day improvement sprint, and review progress daily.`
+      : metric.rag === 'amber'
+        ? `Run one focused improvement experiment this week and monitor this KPI trend in the next review cycle.`
+        : `Maintain current operating rhythm and monitor weekly for regression risk.`
+
+  return { alarm, insight, action }
 }
 
 function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMetric | null {
@@ -564,7 +592,7 @@ export function computeMetricsByCluster({
     out[clusterId] = templates[clusterId].map((tmpl) => {
       const computed = rows ? computeMetric(tmpl.id, rows) : null
       if (!computed) {
-        return {
+        const unavailableMetric: Metric = {
           ...tmpl,
           valueText: rows ? 'N/A' : '--',
           valueNum: undefined,
@@ -578,14 +606,35 @@ export function computeMetricsByCluster({
               ]
             : undefined,
         }
+
+        if (!rows) return unavailableMetric
+
+        const notImplemented = !IMPLEMENTED_METRIC_IDS.has(tmpl.id)
+        return {
+          ...unavailableMetric,
+          alarm: notImplemented
+            ? 'This KPI is not implemented yet in the current MVP.'
+            : 'This KPI is unavailable for the current filter slice.',
+          insight: notImplemented
+            ? 'This tile is visible for roadmap completeness, but no runtime formula is attached yet.'
+            : 'Required data is missing or filtered out for this KPI in the current view.',
+          action: notImplemented
+            ? 'Implement runtime computation logic for this KPI before relying on it for decisions.'
+            : 'Broaden filters or verify required source columns are present in the uploaded dataset.',
+        }
       }
-      return {
+      const computedMetric: Metric = {
         ...tmpl,
         valueText: computed.valueText,
         valueNum: computed.valueNum,
         thresholdText: computed.thresholdText,
         rag: computed.rag,
         supportingFacts: computed.supportingFacts,
+      }
+      const narrative = rows ? buildNarrative(computedMetric) : {}
+      return {
+        ...computedMetric,
+        ...narrative,
       }
     })
   }

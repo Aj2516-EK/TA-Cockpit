@@ -8,13 +8,14 @@ import { retrieveDocs } from './rag'
 import type { KnowledgeBaseDoc } from './knowledge-base'
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: 'edge',
 }
 
 type CompletionRequestBody = {
   prompt: string
   activeCluster?: string
   metricSnapshot?: unknown
+  insightContext?: unknown
   filters?: unknown
 }
 
@@ -36,6 +37,7 @@ export default async function handler(req: Request): Promise<Response> {
     activeCluster: body.activeCluster ?? null,
     filters: body.filters ?? null,
     metricSnapshot: body.metricSnapshot ?? null,
+    insightContext: body.insightContext ?? null,
   }
 
   const result = streamText({
@@ -46,7 +48,9 @@ export default async function handler(req: Request): Promise<Response> {
       'You are a Senior Strategic Talent Acquisition Analyst for an airline HR executive dashboard.\n' +
       'Hard rules:\n' +
       '- Never invent KPI values. Use only numbers present in metricSnapshot.\n' +
+      '- For data-specific analysis, prioritize insightContext (derived from current uploaded dataset and active filters).\n' +
       '- If you need KPI definitions/formulas/thresholds/actions, call retrieveDocs first.\n' +
+      '- Treat any static dataset profile in retrieved docs as background-only, not as current uploaded data.\n' +
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
       '- Keep output concise and decision-ready.\n' +
       '\n' +

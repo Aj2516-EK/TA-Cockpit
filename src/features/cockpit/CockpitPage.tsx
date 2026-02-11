@@ -27,6 +27,8 @@ export function CockpitPage() {
   const [dataset, setDataset] = useState<Dataset | null>(null)
   const [filters, setFilters] = useState<Filters>({})
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [insightsAutoGenerateArmed, setInsightsAutoGenerateArmed] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const [insightMetricId, setInsightMetricId] = useState<string | null>(null)
   const [insightOpen, setInsightOpen] = useState(false)
@@ -123,18 +125,24 @@ export function CockpitPage() {
                 onToggleDarkMode={() => setDarkMode((v) => !v)}
                 onOpenFilters={() => setFiltersOpen(true)}
                 datasetLabel={datasetLabel}
+                isUploading={isUploading}
                 onOpenDataInspector={() => setDataInspectorOpen(true)}
                 onOpenCharts={() => setChartsOpen(true)}
                 onUpload={async (file) => {
+                  if (isUploading) return
                   setUploadError(null)
+                  setIsUploading(true)
                   try {
                     const ds = await parseUploadToDataset(file)
                     setDataset(ds)
                     setFilters(resetFilters())
                     setExpanded({})
                     setContextVersion((v) => v + 1)
+                    setInsightsAutoGenerateArmed(true)
                   } catch (e) {
                     setUploadError(e instanceof Error ? e.message : String(e))
+                  } finally {
+                    setIsUploading(false)
                   }
                 }}
               />
@@ -189,6 +197,7 @@ export function CockpitPage() {
                     filters={filters}
                     insightContext={insightContext}
                     contextVersion={contextVersion}
+                    autoGenerateEnabled={insightsAutoGenerateArmed && Boolean(dataset)}
                   />
                 </div>
 
@@ -237,6 +246,7 @@ export function CockpitPage() {
       <ChatWidget
         activeCluster={activeCluster}
         metricSnapshot={metricSnapshot}
+        insightContext={insightContext}
         filters={filters}
         contextVersion={contextVersion}
         onOpenFilters={() => setFiltersOpen(true)}
