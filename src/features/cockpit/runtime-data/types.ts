@@ -18,6 +18,7 @@ export type DatasetDiagnostics = {
     columns: string[]
   }>
   joins?: {
+    // Fact-row coverage (counts rows in pipeline that found a join)
     factRows: number
     withCandidate: number
     withRequisition: number
@@ -25,6 +26,17 @@ export type DatasetDiagnostics = {
     withPosting: number
     withRecruiterActivity: number
     withInterviewOffer: number
+
+    // Unique-key coverage (more intuitive for sparse side tables)
+    uniqueCandidateIdsInFact?: number
+    uniqueRequisitionIdsInFact?: number
+    uniqueCandidatesWithCandidateJoin?: number
+    uniqueRequisitionsWithRequisitionJoin?: number
+    uniqueRequisitionsWithCostJoin?: number
+    uniqueRequisitionsWithPostingJoin?: number
+    uniqueCandidatesWithRecruiterActivity?: number
+    uniqueCandidatesWithInterviewOffer?: number
+
     missingCandidateRefs?: number
     missingRequisitionRefs?: number
   }

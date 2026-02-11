@@ -20,6 +20,8 @@ type ChatRequestBody = {
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 })
 
+  const reqId = Math.random().toString(36).slice(2, 10)
+
   let body: ChatRequestBody
   try {
     body = (await req.json()) as ChatRequestBody
@@ -38,6 +40,12 @@ export default async function handler(req: Request): Promise<Response> {
     filters: body.filters ?? null,
     metricSnapshot: body.metricSnapshot ?? null,
   }
+  const metricCount = Array.isArray((context.metricSnapshot as { metrics?: unknown[] } | null)?.metrics)
+    ? ((context.metricSnapshot as { metrics?: unknown[] }).metrics?.length ?? 0)
+    : 0
+  console.info(
+    `[chat:${reqId}] start model=${modelName} messages=${body.messages.length} cluster=${String(context.activeCluster)} metrics=${metricCount}`,
+  )
 
   const result = streamText({
     model: openrouter(modelName),
@@ -70,6 +78,9 @@ export default async function handler(req: Request): Promise<Response> {
         }),
         execute: async ({ query, k }) => {
           const retrieved = await retrieveDocs(KNOWLEDGE_BASE_DOCS, query, k)
+          console.info(
+            `[chat:${reqId}] retrieveDocs mode=${retrieved.mode} k=${k} docs=${retrieved.docs.length} query="${query.slice(0, 80)}"`,
+          )
           return retrieved.docs.map((d: KnowledgeBaseDoc) => ({
             id: d.id,
             title: d.title,

@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "data:generate": "node scripts/generate-ta-cockpit-data.mjs",
+    "data:curate:hackathon": "node scripts/create-hackathon-dataset.mjs",
     "rag:embed": "node scripts/generate-rag-embeddings.mjs",
     "rag:embed:dry": "node scripts/generate-rag-embeddings.mjs --dry-run"
   },

@@ -26,3 +26,4 @@ dist-ssr
 
 # Generated test datasets
 /generated/test-data/
+/generated/test-data-hackathon/

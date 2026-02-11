@@ -244,6 +244,14 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
   let missingRequisitionRefs = 0
   const missingCandidateIds = new Set<string>()
   const missingRequisitionIds = new Set<string>()
+  const factCandidateIds = new Set<string>()
+  const factRequisitionIds = new Set<string>()
+  const joinedCandidateIds = new Set<string>()
+  const joinedRequisitionIds = new Set<string>()
+  const costJoinedRequisitionIds = new Set<string>()
+  const postingJoinedRequisitionIds = new Set<string>()
+  const recruiterActivityCandidateIds = new Set<string>()
+  const interviewCandidateIds = new Set<string>()
 
   for (const p of pipeline) {
     const applicationId = toTrimmedString(p['Application_ID'])
@@ -257,21 +265,42 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
     const recruiterAgg = candidateId ? recruiterAggByCandidateId.get(candidateId) : undefined
     const interview = candidateId ? interviewByCandidateId.get(candidateId) : undefined
 
-    if (cand) withCandidate++
+    if (candidateId) factCandidateIds.add(candidateId)
+    if (requisitionId) factRequisitionIds.add(requisitionId)
+
+    if (cand) {
+      withCandidate++
+      if (candidateId) joinedCandidateIds.add(candidateId)
+    }
     else if (candidateId) {
       missingCandidateRefs++
       if (missingCandidateIds.size < 12) missingCandidateIds.add(candidateId)
     }
 
-    if (req) withRequisition++
+    if (req) {
+      withRequisition++
+      if (requisitionId) joinedRequisitionIds.add(requisitionId)
+    }
     else if (requisitionId) {
       missingRequisitionRefs++
       if (missingRequisitionIds.size < 12) missingRequisitionIds.add(requisitionId)
     }
-    if (cost) withCost++
-    if (posting) withPosting++
-    if (recruiterAgg) withRecruiterActivity++
-    if (interview) withInterviewOffer++
+    if (cost) {
+      withCost++
+      if (requisitionId) costJoinedRequisitionIds.add(requisitionId)
+    }
+    if (posting) {
+      withPosting++
+      if (requisitionId) postingJoinedRequisitionIds.add(requisitionId)
+    }
+    if (recruiterAgg) {
+      withRecruiterActivity++
+      if (candidateId) recruiterActivityCandidateIds.add(candidateId)
+    }
+    if (interview) {
+      withInterviewOffer++
+      if (candidateId) interviewCandidateIds.add(candidateId)
+    }
 
     const statusRaw = toTrimmedString(p['Status (Active/Rejected/Hired)'])
     const status =
@@ -343,6 +372,14 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
       withPosting,
       withRecruiterActivity,
       withInterviewOffer,
+      uniqueCandidateIdsInFact: factCandidateIds.size,
+      uniqueRequisitionIdsInFact: factRequisitionIds.size,
+      uniqueCandidatesWithCandidateJoin: joinedCandidateIds.size,
+      uniqueRequisitionsWithRequisitionJoin: joinedRequisitionIds.size,
+      uniqueRequisitionsWithCostJoin: costJoinedRequisitionIds.size,
+      uniqueRequisitionsWithPostingJoin: postingJoinedRequisitionIds.size,
+      uniqueCandidatesWithRecruiterActivity: recruiterActivityCandidateIds.size,
+      uniqueCandidatesWithInterviewOffer: interviewCandidateIds.size,
       missingCandidateRefs,
       missingRequisitionRefs,
     },

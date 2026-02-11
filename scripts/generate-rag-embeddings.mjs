@@ -51,13 +51,13 @@ async function embedBatch({ apiKey, model, inputs }) {
 
 async function main() {
   const { model, batchSize, dryRun } = parseArgs()
-  const docsPath = path.resolve('api/knowledge-base/documents.json')
+  const docsPath = path.resolve('api/knowledge-base/kb-docs.json')
   const outDir = path.resolve('api/rag')
   const metaPath = path.join(outDir, 'embeddings.meta.json')
   const binPath = path.join(outDir, 'embeddings.f32')
 
   const docs = JSON.parse(fs.readFileSync(docsPath, 'utf8'))
-  if (!Array.isArray(docs) || docs.length === 0) throw new Error('documents.json must contain docs[]')
+  if (!Array.isArray(docs) || docs.length === 0) throw new Error('kb-docs.json must contain docs[]')
 
   const ids = docs.map((d) => d.id)
   const inputs = docs.map((d) => [d.title, d.text, ...(d.tags ?? [])].join('\n'))
@@ -115,7 +115,7 @@ async function main() {
         count: vectors.length,
         ids,
         generatedAt: new Date().toISOString(),
-        source: 'api/knowledge-base/documents.json',
+        source: 'api/knowledge-base/kb-docs.json',
       },
       null,
       2,

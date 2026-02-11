@@ -7,10 +7,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 function loadDocs(): KnowledgeBaseDoc[] {
-  const docsPath = path.join(__dirname, 'documents.json')
+  const docsPath = path.join(__dirname, 'kb-docs.json')
   const raw = fs.readFileSync(docsPath, 'utf8')
   const parsed = JSON.parse(raw) as unknown
-  if (!Array.isArray(parsed)) throw new Error('knowledge-base/documents.json must be an array')
+  if (!Array.isArray(parsed)) throw new Error('knowledge-base/kb-docs.json must be an array')
 
   return parsed.map((doc, i) => {
     const d = doc as Partial<KnowledgeBaseDoc>

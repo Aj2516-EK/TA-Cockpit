@@ -14,6 +14,7 @@ import { InsightDrawer } from './components/InsightDrawer'
 import type { Dataset, Filters } from './runtime-data/types'
 import { parseUploadToDataset } from './runtime-data/parse'
 import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/filters'
+import { computeInsightContext } from './runtime-data/insights'
 
 export function CockpitPage() {
   const [activeCluster, setActiveCluster] = useState<ClusterId>('readiness')
@@ -79,6 +80,15 @@ export function CockpitPage() {
       })),
     }),
     [activeCluster, currentMetrics],
+  )
+
+  const insightContext = useMemo(
+    () =>
+      computeInsightContext({
+        rows: filteredRows,
+        currentMetrics,
+      }),
+    [filteredRows, currentMetrics],
   )
 
   const healthScore = useMemo(() => {
@@ -173,7 +183,13 @@ export function CockpitPage() {
                       setInsightOpen(true)
                     }}
                   />
-                  <ClusterBrief activeCluster={activeCluster} metricSnapshot={metricSnapshot} filters={filters} />
+                  <ClusterBrief
+                    activeCluster={activeCluster}
+                    metricSnapshot={metricSnapshot}
+                    filters={filters}
+                    insightContext={insightContext}
+                    contextVersion={contextVersion}
+                  />
                 </div>
 
                 {/* Metric cards */}
