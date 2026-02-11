@@ -12,7 +12,8 @@
     "data:curate:hackathon": "node scripts/create-hackathon-dataset.mjs",
     "rag:embed": "node scripts/generate-rag-embeddings.mjs",
     "rag:embed:dry": "node scripts/generate-rag-embeddings.mjs --dry-run",
-    "openrouter:test": "node scripts/test-openrouter.mjs"
+    "openrouter:test": "node scripts/test-openrouter.mjs",
+    "qdrant:upsert": "node scripts/qdrant-upsert-kb.mjs"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.80",

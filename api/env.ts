@@ -33,3 +33,15 @@ export function getOpenRouterSiteUrl(): string | undefined {
 export function getOpenRouterAppName(): string | undefined {
   return getEnv('OPENROUTER_APP_NAME')
 }
+
+export function getQdrantUrl(): string | undefined {
+  return getEnv('QDRANT_URL')
+}
+
+export function getQdrantApiKey(): string | undefined {
+  return getEnv('QDRANT_API_KEY')
+}
+
+export function getQdrantCollection(): string {
+  return getEnv('QDRANT_COLLECTION') ?? 'ta_cockpit_kb'
+}
