@@ -16,9 +16,7 @@ Airline-style Talent Acquisition dashboard with RAG-scored metric tiles, filters
 - User-friendly error mapping (rate limits, policy blocks, auth)
 
 ## What’s Next (Pending)
-- Upload XLSX/CSV -> parse client-side -> normalized dataset
-- Filters derived from dataset -> apply filters -> recompute metrics
-- Deterministic “metrics engine” for the real dataset (replace sample metrics; keep tiles visible with `N/A` if not computable)
+- Replace remaining proxy KPIs with “true” formulas once the dataset schema is finalized (optional)
 - Knowledge base expansion + embedding-based retrieval (optional “vector DB later” story)
 - Optional: persist chat history in `localStorage`
 
@@ -61,6 +59,9 @@ Open `http://localhost:3000/api/health` and confirm:
 - `src/features/cockpit/*`: main dashboard UI + state
 - `src/features/cockpit/components/*`: UI components (tiles, sidebar, top bar, chat widget)
 - `src/features/cockpit/chat/*`: chat hook + tool-part rendering (typed UI message parts)
+- `src/components/ai-elements/*`: vendor UI primitives installed via `npx ai-elements` (Streamdown markdown renderer + rich chat UI building blocks)
+- `src/components/ui/*`: shadcn-style UI components installed via `npx ai-elements`
+- `components.json`: ai-elements/shadcn generator config (aliases, base color, css vars)
 - `api/chat.ts`: Edge chat endpoint (OpenRouter + tools)
 - `api/completion.ts`: Edge completion endpoint (optional)
 - `api/knowledge-base/*`: small in-repo “docs” used by `retrieveDocs`
@@ -76,4 +77,3 @@ Deploy from GitHub as a standard Vite app with Vercel Functions:
 ## Security
 - Never commit `.env.local`.
 - Do not send raw candidate-level rows to the LLM. Only send computed aggregates (`metricSnapshot`).
-

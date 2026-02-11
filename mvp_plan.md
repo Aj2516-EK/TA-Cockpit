@@ -16,13 +16,19 @@
   - [x] Client tools: `openFilters`, `expandMetric`, `askForConfirmation` (UI tool parts)
 - [x] Markdown rendering in chat (tables/lists) via `ai-elements` Streamdown renderer
 - [x] User-friendly AI error messaging (rate limit, policy block, auth)
-
-- [ ] Upload XLSX/CSV in main panel (client-side)
-- [ ] Parse uploaded dataset -> normalized tables/rows in memory
-- [ ] Populate filter dropdown options from uploaded dataset
-- [ ] Apply filters -> recompute metrics live
-- [ ] Implement a deterministic “metrics engine” for the dataset we have (start with 5-8 computable KPIs)
-- [ ] Replace seeded/sample KPI values with computed values across all clusters (keep tiles visible; show `N/A` if not computable)
+- [x] Shared UI component library installed via `npx ai-elements`:
+  - [x] `src/components/ai-elements/*`
+  - [x] `src/components/ui/*`
+  - [x] `components.json` generator config
+- [x] Upload XLSX/CSV in main panel (client-side)
+- [x] Parse uploaded dataset -> normalized fact rows (in-memory)
+- [x] Populate filter dropdown options from uploaded dataset
+- [x] Apply filters -> recompute metrics live
+- [x] Deterministic “metrics engine” (computed KPIs with supporting facts; proxies documented)
+- [x] Key Insights are functional + clickable:
+  - [x] Derived from current computed metrics (red/amber first)
+  - [x] Click insight -> switch cluster, expand metric, scroll into view, open explanation drawer
+- [ ] Replace remaining proxy KPIs with “true” formulas once the dataset schema is finalized (optional)
 - [ ] Knowledge Base expansion (docs per metric/cluster; actions/playbooks)
 - [ ] Embedding-based retrieval (Option 1):
   - [ ] offline embedding generation script

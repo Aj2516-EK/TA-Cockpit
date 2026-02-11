@@ -22,6 +22,8 @@ export type Metric = {
   alarm: string
   insight: string
   action: string
+  // Small aggregate facts only (no row-level data). Included in AI context.
+  supportingFacts?: string[]
 }
 
 export type KeyInsight = {
@@ -31,4 +33,3 @@ export type KeyInsight = {
   rag: Rag
   icon: string
 }
-

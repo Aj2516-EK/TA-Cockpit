@@ -3,16 +3,19 @@ import { useCompletion } from '@ai-sdk/react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { ClusterId, Metric } from '../model'
+import type { Filters } from '../runtime-data/types'
 
 export function ClusterBrief({
   activeCluster,
   metricSnapshot,
+  filters,
 }: {
   activeCluster: ClusterId
   metricSnapshot: {
     activeCluster: ClusterId
-    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag'>>
+    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag' | 'supportingFacts'>>
   }
+  filters: Filters
 }) {
   const basePrompt = useMemo(() => {
     return (
@@ -28,7 +31,7 @@ export function ClusterBrief({
     body: {
       activeCluster,
       metricSnapshot,
-      filters: null,
+      filters,
     },
   })
 

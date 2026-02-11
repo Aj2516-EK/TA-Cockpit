@@ -18,3 +18,14 @@ export function getEmbeddingModel(): string {
   return getEnv('EMBEDDING_MODEL') ?? 'qwen/qwen3-embedding-8b'
 }
 
+export function getOpenRouterApiKey(): string {
+  return requiredEnv('OPENROUTER_API_KEY')
+}
+
+export function getOpenRouterSiteUrl(): string | undefined {
+  return getEnv('OPENROUTER_SITE_URL')
+}
+
+export function getOpenRouterAppName(): string | undefined {
+  return getEnv('OPENROUTER_APP_NAME')
+}

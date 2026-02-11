@@ -1,0 +1,219 @@
+[
+  {
+    "id": "global.grounding_rules",
+    "title": "Grounding Rules",
+    "cluster": "global",
+    "tags": ["grounding", "non-hallucination", "safety"],
+    "text": "Never invent KPI values. Use only numbers present in metricSnapshot and supportingFacts. If a requested KPI is unavailable, state that it is unavailable and describe what data fields are required."
+  },
+  {
+    "id": "global.dataset_profile.curated_v1",
+    "title": "Curated Dataset Profile v1",
+    "cluster": "global",
+    "tags": ["dataset", "qa", "baseline", "curated"],
+    "text": "Curated test dataset baseline: requisitions=8000, candidates=140000, application_pipeline=120000, recruiter_activity=180000, interview_offer=90000, hiring_cost=8000, job_posting_analytics=8000. Referential integrity: candidate join coverage 100 percent, requisition join coverage 100 percent. Stage aging sample size=82419 with p50=10 days and p90=17 days. Status mix: active 56.94 percent, rejected 26.02 percent, hired 17.04 percent."
+  },
+  {
+    "id": "global.glossary.kpi_fields",
+    "title": "KPI Field Mapping Glossary",
+    "cluster": "global",
+    "tags": ["glossary", "mapping", "schema"],
+    "text": "Primary fact table is 3_Application_Pipeline keyed by Application_ID with Candidate_ID and Requisition_ID. Candidate attributes come from 2_Candidate. Requisition attributes come from 1_Requisition. Hiring cost from 6_Hiring_Cost. Posting analytics from 7_Job_Posting_Analytics where Job_ID maps to Requisition_ID."
+  },
+  {
+    "id": "metric.readiness.qualified_candidates_availability",
+    "title": "Qualified Candidates Availability",
+    "cluster": "readiness",
+    "tags": ["readiness", "supply", "critical_roles"],
+    "text": "Definition: average qualified candidates per critical-skill requisition. Recommended proxy formula: count(distinct candidate_id where skill_match_percentage >= 80 and critical_skill_flag=Y) divided by count(distinct requisition_id where critical_skill_flag=Y). Threshold reference: green above 5.0, amber 3.5 to 5.0, red below 3.5."
+  },
+  {
+    "id": "metric.readiness.skill_readiness",
+    "title": "Talent Pool Skill Readiness",
+    "cluster": "readiness",
+    "tags": ["readiness", "skills", "quality"],
+    "text": "Definition: average Skill_Match_Percentage across unique candidates in the filtered pipeline. Threshold reference: green >= 70 percent, amber 66 to 70 percent, red below 66 percent."
+  },
+  {
+    "id": "metric.readiness.external_connections",
+    "title": "Active External Connections",
+    "cluster": "readiness",
+    "tags": ["readiness", "network", "external"],
+    "text": "Definition: unique external candidates with recruiter activity. Proxy fields: Candidate Type (Internal/External), Recruiter_ID, Time_Spent_Matching (hrs). Threshold reference: green > 1000, amber 800 to 1000, red below 800."
+  },
+  {
+    "id": "metric.readiness.critical_skill_capability",
+    "title": "Critical Skill Hiring Capability",
+    "cluster": "readiness",
+    "tags": ["readiness", "critical_skills", "hiring_outcome"],
+    "text": "Definition: percent of critical-skill requisitions with at least one hired candidate. Formula: count(distinct critical reqs with Status=Hired) divided by count(distinct critical reqs). Threshold reference: green > 90 percent, amber 84 to 90 percent, red below 84 percent."
+  },
+  {
+    "id": "metric.readiness.time_to_present",
+    "title": "Time to Present Critical Skills",
+    "cluster": "readiness",
+    "tags": ["readiness", "sla", "speed"],
+    "text": "Definition: average days from requisition open date to first candidate application for critical requisitions, excluding negative deltas caused by data anomalies. Threshold reference: green < 7.0 days, amber 7.0 to 9.0 days, red > 9.0 days."
+  },
+  {
+    "id": "metric.readiness.pool_variety",
+    "title": "Talent Pool Size and Variety",
+    "cluster": "readiness",
+    "tags": ["readiness", "coverage", "depth"],
+    "text": "Definition: average unique candidates per requisition in the filtered scope. Threshold reference: green > 10, amber 7 to 10, red below 7."
+  },
+  {
+    "id": "metric.momentum.time_to_next_step",
+    "title": "Time to Next Step Decision",
+    "cluster": "momentum",
+    "tags": ["momentum", "throughput", "sla"],
+    "text": "Definition: average stage duration using Stage_Exit_Date minus Stage_Enter_Date for rows with both dates present. Threshold reference: green < 3.0 days, amber 3.0 to 4.0 days, red > 4.0 days."
+  },
+  {
+    "id": "metric.momentum.time_spent_matching",
+    "title": "Time Spent Matching",
+    "cluster": "momentum",
+    "tags": ["momentum", "recruiter_efficiency"],
+    "text": "Definition: average matching hours per unique candidate from recruiter activity. Field: Time_Spent_Matching (hrs). Threshold reference: green < 6.0 hrs, amber 6.0 to 7.0 hrs, red > 7.0 hrs."
+  },
+  {
+    "id": "metric.momentum.time_to_cv_response",
+    "title": "Time to CV Response",
+    "cluster": "momentum",
+    "tags": ["momentum", "candidate_speed", "response_sla"],
+    "text": "Definition: average Recruiter_Response_Time in hours from pipeline records. Threshold reference: green < 24 hours, amber 24 to 30 hours, red > 30 hours."
+  },
+  {
+    "id": "metric.momentum.recruiting_experience_rating",
+    "title": "Recruiting Experience Rating",
+    "cluster": "momentum",
+    "tags": ["momentum", "candidate_experience"],
+    "text": "Definition: candidate satisfaction proxy on a 5-point scale. If Candidate_NPS is on 10-point scale, use proxy Candidate_NPS/2. Threshold reference: green > 4.2, amber 4.0 to 4.2, red below 4.0."
+  },
+  {
+    "id": "metric.experience.incomplete_applications",
+    "title": "Incomplete Applications",
+    "cluster": "experience",
+    "tags": ["experience", "dropoff", "conversion"],
+    "text": "Definition: percent of candidates where Application_Completed (Y/N)=N among records with completion flag available. Threshold reference: green < 15 percent, amber 15 to 20 percent, red > 20 percent."
+  },
+  {
+    "id": "metric.experience.time_to_apply",
+    "title": "Time to Apply",
+    "cluster": "experience",
+    "tags": ["experience", "friction", "form_speed"],
+    "text": "Definition: average minutes between Application_Start_Time and Application_Submit_Time for candidates with both timestamps. Threshold reference: green < 10 minutes, amber 10 to 12 minutes, red > 12 minutes."
+  },
+  {
+    "id": "metric.experience.ease_of_applying",
+    "title": "Ease of Applying Rating",
+    "cluster": "experience",
+    "tags": ["experience", "ux", "rating"],
+    "text": "Definition: average Application_Ease_Rating on a 5-point scale. Threshold reference: green > 4.0, amber 3.8 to 4.0, red below 3.8."
+  },
+  {
+    "id": "metric.diversity.diverse_attraction",
+    "title": "Diverse Candidates Attraction",
+    "cluster": "diversity",
+    "tags": ["diversity", "top_of_funnel", "attraction"],
+    "text": "Definition: percent of unique candidates with Diversity_Flag=Y in the filtered scope. Threshold reference: green > 40 percent, amber 35 to 40 percent, red below 35 percent."
+  },
+  {
+    "id": "metric.diversity.diverse_pipeline",
+    "title": "Diverse Talent Pipeline",
+    "cluster": "diversity",
+    "tags": ["diversity", "pipeline", "outcomes"],
+    "text": "Definition: percent of hired candidates with Diversity_Flag=Y among hired candidates with diversity flag available. Threshold reference: green > 40 percent, amber 32 to 40 percent, red below 32 percent."
+  },
+  {
+    "id": "metric.diversity.active_applicants",
+    "title": "Active Applicants",
+    "cluster": "diversity",
+    "tags": ["diversity", "pipeline_volume"],
+    "text": "Definition: unique candidates currently in active status (Status=Active). Threshold reference: green > 8000, amber 6000 to 8000, red below 6000."
+  },
+  {
+    "id": "metric.economics.cost_per_acquisition",
+    "title": "Cost per Acquisition",
+    "cluster": "economics",
+    "tags": ["economics", "cost", "efficiency"],
+    "text": "Definition: total hiring cost across requisitions divided by total applications in scope. Inputs: Total_Hiring_Cost from 6_Hiring_Cost and Application_ID from pipeline. Threshold reference: green < 2500, amber 2500 to 3200, red > 3200."
+  },
+  {
+    "id": "metric.economics.presented_vs_offers",
+    "title": "Candidates Presented vs Offers Made",
+    "cluster": "economics",
+    "tags": ["economics", "yield", "offers"],
+    "text": "Definition: offer yield from presented/interviewed candidates. Recommended implementation: offers_made divided by interviewed candidates in scope, with clear denominator notes."
+  },
+  {
+    "id": "metric.economics.job_posting_effectiveness",
+    "title": "Job Posting Effectiveness",
+    "cluster": "economics",
+    "tags": ["economics", "channel", "top_funnel"],
+    "text": "Definition: applications received divided by job views using 7_Job_Posting_Analytics. Threshold reference: green > 8 percent, amber 6 to 8 percent, red below 6 percent."
+  },
+  {
+    "id": "metric.economics.hires_from_competitors",
+    "title": "Hires from Competitors",
+    "cluster": "economics",
+    "tags": ["economics", "competitive_hiring"],
+    "text": "Definition: percent of hired candidates with Is_Competitor (Y/N)=Y among hires with competitor flag available. Threshold reference: green > 15 percent, amber 12 to 15 percent, red below 12 percent."
+  },
+  {
+    "id": "metric.economics.hm_feedback_time",
+    "title": "Hiring Manager Feedback Time",
+    "cluster": "economics",
+    "tags": ["economics", "feedback_sla", "speed"],
+    "text": "Definition: average days between Interview_Date and Feedback_Date in 5_Interview_Offer for valid sequences. Threshold reference: green < 2.0 days, amber 2.0 to 2.5 days, red > 2.5 days."
+  },
+  {
+    "id": "metric.economics.jd_criteria_match",
+    "title": "JD Criteria Match",
+    "cluster": "economics",
+    "tags": ["economics", "quality_of_intake", "fit"],
+    "text": "Definition: average Skill_Match_Percentage for candidates in scope as a proxy for JD alignment. Threshold reference: green > 75 percent, amber 72 to 75 percent, red below 72 percent."
+  },
+  {
+    "id": "metric.economics.interviewed_vs_offered",
+    "title": "Interviewed vs Offered Ratio",
+    "cluster": "economics",
+    "tags": ["economics", "funnel_efficiency", "ratio"],
+    "text": "Definition: interviewed candidates divided by offers made, displayed as ratio 1:X. Reference target: 1:4. Below target can indicate weaker screening precision or panel consistency issues."
+  },
+  {
+    "id": "playbook.readiness.red_kpi_response",
+    "title": "Readiness Red KPI Response Playbook",
+    "cluster": "readiness",
+    "tags": ["playbook", "actions", "readiness"],
+    "text": "When readiness KPIs are red: focus first on critical requisitions, launch source-specific sourcing sprints, enforce shortlist SLAs, and rebalance recruiter capacity to critical roles. Track impact weekly via qualified candidates per critical requisition and time to first qualified slate."
+  },
+  {
+    "id": "playbook.momentum.red_kpi_response",
+    "title": "Momentum Red KPI Response Playbook",
+    "cluster": "momentum",
+    "tags": ["playbook", "actions", "momentum"],
+    "text": "When momentum KPIs are red: enforce response and feedback SLAs, auto-escalate stale requisitions, and standardize interview scheduling windows. Track stage aging p50 and p90 each week and identify top delaying stages."
+  },
+  {
+    "id": "playbook.experience.red_kpi_response",
+    "title": "Experience Red KPI Response Playbook",
+    "cluster": "experience",
+    "tags": ["playbook", "actions", "experience"],
+    "text": "When experience KPIs are red: simplify application flow, reduce mandatory fields, improve mobile upload reliability, and instrument step-level drop-off. Prioritize fixes where incomplete application rate and time-to-apply are worst."
+  },
+  {
+    "id": "playbook.diversity.red_kpi_response",
+    "title": "Diversity Red KPI Response Playbook",
+    "cluster": "diversity",
+    "tags": ["playbook", "actions", "diversity"],
+    "text": "When diversity KPIs are red: expand sourcing channels, standardize panel evaluation rubrics, and monitor progression parity by stage. Compare diverse share at apply versus hire and run weekly parity reviews."
+  },
+  {
+    "id": "playbook.economics.red_kpi_response",
+    "title": "Economics Red KPI Response Playbook",
+    "cluster": "economics",
+    "tags": ["playbook", "actions", "economics"],
+    "text": "When economics KPIs are red: optimize channel spend, reduce agency reliance for non-critical roles, tighten intake quality, and shorten feedback cycles. Monitor cost per acquisition, posting effectiveness, and offer yield together to avoid local optimizations."
+  }
+]

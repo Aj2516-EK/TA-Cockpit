@@ -4,9 +4,10 @@ import { z } from 'zod'
 import { KNOWLEDGE_BASE_DOCS, type KnowledgeBaseDoc } from './knowledge-base'
 import { getChatModel, requiredEnv } from './env'
 import { getPublicAiErrorMessage } from './errors'
+import { retrieveDocs } from './rag'
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'nodejs',
 }
 
 type ChatRequestBody = {
@@ -14,27 +15,6 @@ type ChatRequestBody = {
   activeCluster?: string
   metricSnapshot?: unknown
   filters?: unknown
-}
-
-function simpleRetrieveDocs(query: string, k: number): KnowledgeBaseDoc[] {
-  // MVP fallback retrieval (no embeddings yet). Swappable with vector similarity later.
-  const q = query.toLowerCase()
-
-  const scored = KNOWLEDGE_BASE_DOCS.map((d) => {
-    const hay = (d.title + ' ' + d.id + ' ' + d.text + ' ' + (d.tags ?? []).join(' ')).toLowerCase()
-    let score = 0
-    for (const term of q.split(/\s+/).filter(Boolean)) {
-      if (hay.includes(term)) score += 1
-    }
-    // Boost cluster name mentions
-    if (q.includes(d.cluster)) score += 2
-    return { d, score }
-  })
-
-  return scored
-    .sort((a, b) => b.score - a.score)
-    .slice(0, Math.max(1, Math.min(12, k)))
-    .map((x) => x.d)
 }
 
 export default async function handler(req: Request): Promise<Response> {
@@ -89,7 +69,8 @@ export default async function handler(req: Request): Promise<Response> {
           k: z.number().int().min(1).max(12).default(6).describe('How many documents to retrieve'),
         }),
         execute: async ({ query, k }) => {
-          return simpleRetrieveDocs(query, k).map((d) => ({
+          const retrieved = await retrieveDocs(KNOWLEDGE_BASE_DOCS, query, k)
+          return retrieved.docs.map((d: KnowledgeBaseDoc) => ({
             id: d.id,
             title: d.title,
             cluster: d.cluster,

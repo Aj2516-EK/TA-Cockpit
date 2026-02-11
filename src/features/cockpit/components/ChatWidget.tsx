@@ -5,18 +5,23 @@ import type { ClusterId, Metric } from '../model'
 import { useCockpitChat } from '../chat/useCockpitChat'
 import { ChatParts } from '../chat/ChatParts'
 import type { CockpitUIMessage } from '../chat/tools'
+import type { Filters } from '../runtime-data/types'
 
 export function ChatWidget({
   activeCluster,
   metricSnapshot,
+  filters,
+  contextVersion,
   onOpenFilters,
   onExpandMetric,
 }: {
   activeCluster: ClusterId
   metricSnapshot: {
     activeCluster: ClusterId
-    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag'>>
+    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag' | 'supportingFacts'>>
   }
+  filters: Filters
+  contextVersion: number
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
@@ -26,17 +31,30 @@ export function ChatWidget({
   const { messages, sendMessage, status, stop, error, addToolOutput } = useCockpitChat({
     activeCluster,
     metricSnapshot,
+    filters,
     onOpenFilters,
     onExpandMetric,
   })
 
   const [input, setInput] = useState('')
+  const [contextUpdated, setContextUpdated] = useState(false)
 
   useEffect(() => {
     if (!open) return
     const t = window.setTimeout(() => inputRef.current?.focus(), 50)
     return () => window.clearTimeout(t)
   }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    // Avoid synchronous setState inside effects (eslint react-hooks/set-state-in-effect).
+    const tShow = window.setTimeout(() => setContextUpdated(true), 0)
+    const tHide = window.setTimeout(() => setContextUpdated(false), 1600)
+    return () => {
+      window.clearTimeout(tShow)
+      window.clearTimeout(tHide)
+    }
+  }, [contextVersion, open])
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -96,6 +114,11 @@ export function ChatWidget({
         {/* Messages */}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
           <StatusRow status={status} onStop={stop} />
+          {contextUpdated && (
+            <div className="mb-3 rounded-[14px] border border-[color:var(--ta-primary)]/20 bg-[color:var(--ta-primary)]/10 p-2 text-[12px] font-medium text-[color:var(--ta-primary)]">
+              Context updated (filters/dataset changed)
+            </div>
+          )}
 
           {error && (
             <div className="mb-3 rounded-[14px] border border-rose-500/20 bg-rose-500/10 p-3 text-[13px] font-normal text-rose-700 dark:text-rose-200">
@@ -111,6 +134,26 @@ export function ChatWidget({
                 Ask about drivers, bottlenecks, or actions.
                 <div className="mt-1.5 text-[12px] font-normal text-slate-500 dark:text-slate-400">
                   Uses the current cluster and KPI snapshot.
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    'Why are the red KPIs red in this cluster?',
+                    'What are the top 3 drivers of delay and what should we do next week?',
+                    'Which filter slice would most improve the worst KPI?',
+                    'Summarize the KPI snapshot in 5 bullets (no made-up numbers).',
+                  ].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        if (status !== 'ready') return
+                        sendMessage({ text: p })
+                      }}
+                      className="rounded-2xl bg-slate-900/5 px-3 py-1.5 text-[12px] font-semibold text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                    >
+                      {p}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

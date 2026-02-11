@@ -15,7 +15,10 @@ export function MetricCard({
   const contentId = `${metric.id}-content`
 
   return (
-    <div className={cn('rounded-[26px] border p-4 bg-white/65 dark:bg-slate-950/25', ragCardClass(metric.rag))}>
+    <div
+      id={metric.id}
+      className={cn('rounded-[26px] border p-4 bg-white/65 dark:bg-slate-950/25', ragCardClass(metric.rag))}
+    >
       <button
         type="button"
         onClick={onToggle}
@@ -47,6 +50,12 @@ export function MetricCard({
             <Section label="Alarm" value={metric.alarm} tone="strong" />
             <Section label="AI Insight" value={metric.insight} />
             <Section label="Recommended Action" value={metric.action} />
+            {(metric.supportingFacts ?? []).length > 0 && (
+              <Section
+                label="Supporting Facts"
+                value={(metric.supportingFacts ?? []).join('\n')}
+              />
+            )}
 
             <button
               type="button"
@@ -71,6 +80,7 @@ function Section({
   value: string
   tone?: 'strong'
 }) {
+  const isMultiLine = value.includes('\n')
   return (
     <div className="rounded-[18px] border border-slate-900/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
@@ -83,7 +93,7 @@ function Section({
           tone !== 'strong' && 'font-normal',
         )}
       >
-        {value}
+        {isMultiLine ? <div className="whitespace-pre-wrap">{value}</div> : value}
       </div>
     </div>
   )

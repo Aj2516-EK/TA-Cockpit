@@ -1,4 +1,5 @@
 import type { ClusterId, ClusterMeta, KeyInsight, Metric, Rag } from './types'
+import { gapToTargetText, ragLabel } from './metricExplain'
 
 export const clusters: ClusterMeta[] = [
   {
@@ -53,7 +54,8 @@ const mk = (m: Omit<Metric, 'id'> & { idSuffix: string }, cluster: ClusterId): M
   id: `metric.${cluster}.${m.idSuffix}`,
 })
 
-export const metricsByCluster: Record<ClusterId, Metric[]> = {
+// These are UI templates (static copy + icons). Values get overwritten by the metrics engine at runtime.
+export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
   readiness: [
     mk(
       {
@@ -435,13 +437,24 @@ export function sortRag(rag: Rag) {
 }
 
 export function summarizeKeyInsights(all: Metric[]): KeyInsight[] {
-  const ordered = [...all].sort((a, b) => sortRag(a.rag) - sortRag(b.rag))
+  // Avoid generating insights from unavailable KPIs.
+  const available = all.filter((m) => typeof m.valueNum === 'number')
+  const ordered = [...available].sort((a, b) => {
+    const ragDiff = sortRag(a.rag) - sortRag(b.rag)
+    if (ragDiff !== 0) return ragDiff
+    // Tie-breaker: surface the biggest gap-to-target first.
+    const ga = gapToTargetText(a) ?? ''
+    const gb = gapToTargetText(b) ?? ''
+    return gb.localeCompare(ga)
+  })
   return ordered.slice(0, 4).map((m) => ({
     metricId: m.id,
     title: m.title,
-    text: m.alarm,
+    text:
+      typeof m.valueNum === 'number'
+        ? `${ragLabel(m.rag)}: ${m.valueText} vs ${m.thresholdText}${gapToTargetText(m) ? ` (${gapToTargetText(m)})` : ''}`
+        : m.alarm,
     rag: m.rag,
     icon: m.icon,
   }))
 }
-

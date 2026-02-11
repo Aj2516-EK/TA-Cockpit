@@ -6,18 +6,21 @@ import {
 } from 'ai'
 import type { ClusterId, Metric } from '../model'
 import type { CockpitUIMessage } from './tools'
+import type { Filters } from '../runtime-data/types'
 
 export function useCockpitChat({
   activeCluster,
   metricSnapshot,
+  filters,
   onOpenFilters,
   onExpandMetric,
 }: {
   activeCluster: ClusterId
   metricSnapshot: {
     activeCluster: ClusterId
-    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag'>>
+    metrics: Array<Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag' | 'supportingFacts'>>
   }
+  filters: Filters
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
@@ -27,9 +30,9 @@ export function useCockpitChat({
         api: '/api/chat',
         // Keep dashboard context out of the user-visible chat history.
         // This is attached to every request server-side via the transport body.
-        body: () => ({ activeCluster, metricSnapshot, filters: null }),
+        body: () => ({ activeCluster, metricSnapshot, filters }),
       }),
-    [activeCluster, metricSnapshot],
+    [activeCluster, metricSnapshot, filters],
   )
 
   const chat = useChat<CockpitUIMessage>({

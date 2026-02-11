@@ -6,11 +6,17 @@ export function TopBar({
   onToggleDarkMode,
   onOpenFilters,
   datasetLabel,
+  onUpload,
+  onOpenDataInspector,
+  onOpenCharts,
 }: {
   darkMode: boolean
   onToggleDarkMode: () => void
   onOpenFilters: () => void
   datasetLabel: string
+  onUpload: (file: File) => void
+  onOpenDataInspector: () => void
+  onOpenCharts: () => void
 }) {
   return (
     <header
@@ -37,7 +43,18 @@ export function TopBar({
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7">
           <Icon name="upload" className="text-[18px]" />
           <span className="hidden sm:inline">Upload</span>
-          <input type="file" className="hidden" />
+          <input
+            type="file"
+            className="hidden"
+            accept=".xlsx,.xls,.csv"
+            onChange={(e) => {
+              const f = e.currentTarget.files?.[0]
+              if (!f) return
+              onUpload(f)
+              // allow re-uploading the same filename
+              e.currentTarget.value = ''
+            }}
+          />
         </label>
 
         <button
@@ -53,6 +70,36 @@ export function TopBar({
         >
           <Icon name="filter_list" className="text-[18px]" />
           <span className="hidden text-[11px] font-bold sm:inline">Filters</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenDataInspector}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-2xl px-3 py-2',
+            'bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10',
+            'dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
+          )}
+          aria-label="Open data inspector"
+          title="Data inspector"
+        >
+          <Icon name="table_view" className="text-[18px]" />
+          <span className="hidden text-[11px] font-bold sm:inline">Data</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenCharts}
+          className={cn(
+            'inline-flex items-center gap-2 rounded-2xl px-3 py-2',
+            'bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10',
+            'dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
+          )}
+          aria-label="Open charts"
+          title="Charts"
+        >
+          <Icon name="show_chart" className="text-[18px]" />
+          <span className="hidden text-[11px] font-bold sm:inline">Charts</span>
         </button>
 
         <button
