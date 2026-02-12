@@ -40,13 +40,6 @@ export function TopBar({
           <span className="max-w-[220px] truncate">{datasetLabel}</span>
         </span>
 
-        {isUploading && (
-          <span className="hidden items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-semibold text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25 dark:bg-[color:var(--ta-primary)]/15 sm:inline-flex">
-            <span className="inline-flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-[color:var(--ta-primary)]/30 border-t-[color:var(--ta-primary)]" />
-            Uploading file
-          </span>
-        )}
-
         <label
           className={cn(
             'inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-wider ring-1 transition',

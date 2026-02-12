@@ -1,4 +1,4 @@
-import { getChatModel, getEmbeddingModel, getEnv } from './env'
+import { getChatModel, getEmbeddingModel, getEnv, getQdrantCollection, getQdrantUrl } from './env'
 
 export const config = {
   runtime: 'edge',
@@ -12,6 +12,8 @@ export default async function handler(req: Request): Promise<Response> {
     hasOpenRouterKey: Boolean(getEnv('OPENROUTER_API_KEY')),
     chatModel: getChatModel(),
     embeddingModel: getEmbeddingModel(),
+    hasQdrantUrl: Boolean(getQdrantUrl()),
+    qdrantCollection: getQdrantCollection(),
   }
 
   return new Response(JSON.stringify(body, null, 2), {
@@ -19,4 +21,3 @@ export default async function handler(req: Request): Promise<Response> {
     headers: { 'content-type': 'application/json; charset=utf-8' },
   })
 }
-
