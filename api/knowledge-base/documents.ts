@@ -1,5 +1,6 @@
 import type { KnowledgeBaseDoc } from './types.js'
-import kbDocsRaw from './kb-docs.json' with { type: 'json' }
+// @ts-ignore -- Vercel bundler handles JSON imports; import attributes are not supported there yet.
+import kbDocsRaw from './kb-docs.json'
 
 function validateDocs(raw: unknown): KnowledgeBaseDoc[] {
   if (!Array.isArray(raw)) throw new Error('knowledge-base/kb-docs.json must be an array')
