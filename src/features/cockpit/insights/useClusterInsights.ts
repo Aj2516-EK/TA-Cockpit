@@ -64,7 +64,10 @@ export function useClusterInsights({
       setStatus('success')
       return true
     } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return false
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        setStatus('idle')
+        return false
+      }
       const msg = e instanceof Error ? e.message : String(e)
       setError(msg)
       setStatus('error')

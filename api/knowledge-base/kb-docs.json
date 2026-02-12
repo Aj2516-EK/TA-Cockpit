@@ -137,14 +137,14 @@
     "title": "Cost per Acquisition",
     "cluster": "economics",
     "tags": ["economics", "cost", "efficiency"],
-    "text": "Definition: total hiring cost across requisitions divided by total applications in scope. Inputs: Total_Hiring_Cost from 6_Hiring_Cost and Application_ID from pipeline. Threshold reference: green < 2500, amber 2500 to 3200, red > 3200."
+    "text": "Definition: total hiring cost across requisitions divided by total hires in scope. Inputs: Total_Hiring_Cost from 6_Hiring_Cost and Status=Hired from pipeline (unique Application_ID where available). If hires are zero, show N/A and note missing hires. Threshold reference: green < 2500, amber 2500 to 3200, red > 3200."
   },
   {
     "id": "metric.economics.presented_vs_offers",
     "title": "Candidates Presented vs Offers Made",
     "cluster": "economics",
     "tags": ["economics", "yield", "offers"],
-    "text": "Definition: offer yield from presented/interviewed candidates. Recommended implementation: offers_made divided by interviewed candidates in scope, with clear denominator notes."
+    "text": "Definition: offer yield from presented/interviewed candidates. Proxy implementation: offers_made divided by interviewed candidates (unique) in scope, shown as a percent. Threshold reference: green > 25 percent, amber 20 to 25 percent, red below 20 percent. If interviewed = 0, show N/A and note missing interviews."
   },
   {
     "id": "metric.economics.job_posting_effectiveness",

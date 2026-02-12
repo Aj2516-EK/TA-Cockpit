@@ -175,8 +175,9 @@ All metrics are computed on **filtered rows**.
 ### 3.5 Economics
 
 1. `metric.economics.cost_per_acquisition`
-- Formula (proxy): `(sum of Total_Hiring_Cost once per requisition) / (unique application count)`.
-- If unique application IDs are missing, denominator falls back to row count.
+- Formula: `(sum of Total_Hiring_Cost once per requisition) / (unique hires)`.
+- Hires are counted as `Status = Hired` using unique `Application_ID` where available (fallback to row index).
+- If hires = 0, KPI is shown as `N/A` with a supporting-fact reason.
 - Threshold text: `< $2,500`
 - RAG: green <= 2500, amber <= 3200, red > 3200
 
@@ -207,15 +208,14 @@ All metrics are computed on **filtered rows**.
 - Threshold text: `Target 1 : 4`
 - RAG: green if X >= 4, amber if X >= 3, red otherwise
 
-## 4) KPI Not Yet Implemented in Runtime Engine
+7. `metric.economics.presented_vs_offers`
+- Formula (proxy): `offers made / interviewed candidates` (unique candidates).
+- Display format: percent.
+- Threshold text: `> 25%`
+- RAG: green >= 25, amber >= 20, red < 20
+- If interviewed = 0, KPI is shown as `N/A` with a supporting-fact reason.
 
-- Template-only metric ID currently not computed in `runtimeMetrics.ts`:
-  - `metric.economics.presented_vs_offers`
-- Behavior in UI:
-  - shown as `N/A`
-  - supporting fact: `MVP: metric not implemented yet.`
-
-## 5) N/A Behavior Rules
+## 4) N/A Behavior Rules
 
 For a metric tile, `N/A` is shown when:
 - required fields are missing for the current filtered slice, or

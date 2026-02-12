@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { clusters, computeMetricsByCluster, summarizeKeyInsights, type ClusterId, type Metric } from './model'
 import { SidebarNav } from './components/SidebarNav'
 import { TopBar } from './components/TopBar'
@@ -24,6 +24,7 @@ export function CockpitPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dataInspectorOpen, setDataInspectorOpen] = useState(false)
   const [chartsOpen, setChartsOpen] = useState(false)
+  const [chartsMetricId, setChartsMetricId] = useState<string | null>(null)
   const [dataset, setDataset] = useState<Dataset | null>(null)
   const [filters, setFilters] = useState<Filters>({})
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -33,10 +34,37 @@ export function CockpitPage() {
   const [insightMetricId, setInsightMetricId] = useState<string | null>(null)
   const [insightOpen, setInsightOpen] = useState(false)
   const [pendingScrollMetricId, setPendingScrollMetricId] = useState<string | null>(null)
+  const [metricNarratives, setMetricNarratives] = useState<
+    Record<string, { alarm: string; insight: string; action: string; source?: string }>
+  >({})
+  const narrativeReqRef = useRef(0)
+  const [metricAssignments, setMetricAssignments] = useState<
+    Record<string, { owner: string; note: string; targetDate: string; assignedAt: string }>
+  >({})
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
   }, [darkMode])
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem('ta_metric_assignments')
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, { owner: string; note: string; targetDate: string; assignedAt: string }>
+        setMetricAssignments(parsed)
+      }
+    } catch {
+      // Ignore localStorage hydration failures.
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('ta_metric_assignments', JSON.stringify(metricAssignments))
+    } catch {
+      // Ignore persistence failures.
+    }
+  }, [metricAssignments])
 
   const filterOptions = useMemo(() => deriveFilterOptions(dataset?.rows ?? null), [dataset])
   const filteredRows = useMemo(() => {
@@ -56,7 +84,18 @@ export function CockpitPage() {
 
   const currentCluster = clusters.find((c) => c.id === activeCluster)!
   const currentMetrics = metricsByCluster[activeCluster]
-  const metricById = useMemo(() => new Map(allMetrics.map((m) => [m.id, m] as const)), [allMetrics])
+  const currentMetricsWithNarratives = useMemo(
+    () =>
+      currentMetrics.map((m) => (metricNarratives[m.id] ? { ...m, ...metricNarratives[m.id] } : m)),
+    [currentMetrics, metricNarratives],
+  )
+  const metricById = useMemo(
+    () =>
+      new Map(
+        allMetrics.map((m) => [m.id, metricNarratives[m.id] ? { ...m, ...metricNarratives[m.id] } : m] as const),
+      ),
+    [allMetrics, metricNarratives],
+  )
 
   useEffect(() => {
     if (!pendingScrollMetricId) return
@@ -93,6 +132,93 @@ export function CockpitPage() {
     [filteredRows, currentMetrics],
   )
 
+  const metricsForNarratives = useMemo(
+    () =>
+      currentMetrics.map((m) => ({
+        id: m.id,
+        title: m.title,
+        valueText: m.valueText,
+        thresholdText: m.thresholdText,
+        rag: m.rag,
+        supportingFacts: m.supportingFacts ?? [],
+      })),
+    [currentMetrics],
+  )
+
+  useEffect(() => {
+    if (!dataset || metricsForNarratives.length === 0) {
+      setMetricNarratives({})
+      return
+    }
+
+    const reqId = ++narrativeReqRef.current
+
+    const fallbackNarrative = (metric: (typeof metricsForNarratives)[number]) => {
+      const value = metric.valueText.trim().toUpperCase()
+      const unavailable = value === 'N/A' || value === '--'
+      const gap = unavailable ? 'Value unavailable for the current filter slice.' : `${metric.valueText} vs ${metric.thresholdText}.`
+      const alarm =
+        metric.rag === 'red'
+          ? `${metric.title} is off target. ${gap}`
+          : metric.rag === 'amber'
+            ? `${metric.title} is near threshold. ${gap}`
+            : `${metric.title} is on target. ${gap}`
+      const fact = metric.supportingFacts?.[0]
+      const insight = unavailable
+        ? `Data required for this KPI is missing or filtered out.${fact ? ` Evidence: ${fact}.` : ''}`
+        : `Current performance is ${metric.rag}.${fact ? ` Evidence: ${fact}.` : ''}`
+      const action =
+        unavailable
+          ? 'Confirm required columns are present or broaden filters to restore data coverage.'
+          : metric.rag === 'red'
+            ? 'Assign an owner and run a focused improvement sprint this week.'
+            : metric.rag === 'amber'
+              ? 'Run one targeted improvement experiment and monitor weekly.'
+              : 'Maintain current cadence and monitor for regression.'
+      return { alarm, insight, action }
+    }
+
+    const run = async () => {
+      try {
+        const res = await fetch('/api/metric-narratives', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            metrics: metricsForNarratives,
+            filters,
+            insightContext,
+          }),
+        })
+        if (!res.ok) throw new Error(`Narratives request failed: ${res.status}`)
+        const json = (await res.json()) as {
+          items?: Array<{ id: string; alarm: string; insight: string; action: string }>
+        }
+        if (narrativeReqRef.current !== reqId) return
+        const items = json.items ?? []
+        const next: Record<string, { alarm: string; insight: string; action: string }> = {}
+        for (const item of items) {
+          if (!item?.id) continue
+          next[item.id] = {
+            alarm: item.alarm,
+            insight: item.insight,
+            action: item.action,
+          }
+        }
+        setMetricNarratives(next)
+      } catch (err) {
+        if (narrativeReqRef.current !== reqId) return
+        const next: Record<string, { alarm: string; insight: string; action: string }> = {}
+        for (const metric of metricsForNarratives) {
+          next[metric.id] = fallbackNarrative(metric)
+        }
+        setMetricNarratives(next)
+        console.warn('[metric-narratives] fallback after fetch error', err)
+      }
+    }
+
+    run()
+  }, [dataset, metricsForNarratives, filters, insightContext])
+
   const healthScore = useMemo(() => {
     const score = (rag: string) => (rag === 'green' ? 100 : rag === 'amber' ? 70 : 40)
     const values = allMetrics.filter((m) => typeof m.valueNum === 'number').map((m) => score(m.rag))
@@ -105,6 +231,19 @@ export function CockpitPage() {
     const filteredCount = filteredRows?.length ?? dataset.rows.length
     return `Dataset: ${dataset.name} | Rows: ${dataset.rows.length.toLocaleString()} | Filtered: ${filteredCount.toLocaleString()}`
   }, [dataset, filteredRows])
+
+  const handleAssignMetric = (metricId: string, assignment: { owner: string; note: string; targetDate: string; assignedAt: string }) => {
+    setMetricAssignments((prev) => ({ ...prev, [metricId]: assignment }))
+  }
+
+  const handleClearAssignment = (metricId: string) => {
+    setMetricAssignments((prev) => {
+      if (!prev[metricId]) return prev
+      const next = { ...prev }
+      delete next[metricId]
+      return next
+    })
+  }
 
   return (
     <div className="h-dvh w-dvw overflow-hidden bg-[radial-gradient(90%_80%_at_0%_0%,rgba(33,150,243,0.16),transparent_55%),radial-gradient(85%_70%_at_100%_0%,rgba(103,58,183,0.12),transparent_60%),radial-gradient(70%_80%_at_100%_100%,rgba(233,30,99,0.10),transparent_55%)]">
@@ -127,7 +266,10 @@ export function CockpitPage() {
                 datasetLabel={datasetLabel}
                 isUploading={isUploading}
                 onOpenDataInspector={() => setDataInspectorOpen(true)}
-                onOpenCharts={() => setChartsOpen(true)}
+                onOpenCharts={() => {
+                  setChartsMetricId(null)
+                  setChartsOpen(true)
+                }}
                 onUpload={async (file) => {
                   if (isUploading) return
                   setUploadError(null)
@@ -203,9 +345,16 @@ export function CockpitPage() {
 
                 {/* Metric cards */}
                 <MetricsGrid
-                  metrics={currentMetrics}
+                  metrics={currentMetricsWithNarratives}
                   expanded={expanded}
                   onToggleMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: !s[metricId] }))}
+                  onVisualizeMetric={(metricId) => {
+                    setChartsMetricId(metricId)
+                    setChartsOpen(true)
+                  }}
+                  assignments={metricAssignments}
+                  onAssignMetric={handleAssignMetric}
+                  onClearAssignment={handleClearAssignment}
                 />
               </main>
             </div>
@@ -242,6 +391,8 @@ export function CockpitPage() {
         onClose={() => setChartsOpen(false)}
         dataset={dataset}
         filteredRows={filteredRows}
+        focusMetric={chartsMetricId ? metricById.get(chartsMetricId) ?? null : null}
+        onClearFocus={() => setChartsMetricId(null)}
       />
       <ChatWidget
         activeCluster={activeCluster}

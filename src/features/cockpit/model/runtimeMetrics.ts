@@ -1,7 +1,6 @@
 import type { ClusterId, Metric, Rag } from './types'
 import { metricTemplatesByCluster } from './sampleData'
 import type { ApplicationFactRow } from '../runtime-data/types'
-import { gapToTargetText, meaningForMetric } from './metricExplain'
 
 export type ComputedMetric = Pick<Metric, 'valueText' | 'valueNum' | 'thresholdText' | 'rag' | 'supportingFacts'>
 
@@ -23,6 +22,7 @@ export const IMPLEMENTED_METRIC_IDS = new Set<string>([
   'metric.diversity.diverse_pipeline',
   'metric.diversity.active_applicants',
   'metric.economics.cost_per_acquisition',
+  'metric.economics.presented_vs_offers',
   'metric.economics.job_posting_effectiveness',
   'metric.economics.hires_from_competitors',
   'metric.economics.hm_feedback_time',
@@ -98,32 +98,11 @@ function uniqBy<T>(items: T[], key: (t: T) => string | null | undefined): T[] {
   return out
 }
 
-function buildNarrative(metric: Metric): Pick<Metric, 'alarm' | 'insight' | 'action'> {
-  const gap = gapToTargetText(metric)
-  const meaning = meaningForMetric(metric.id).meaning
-  const fact = metric.supportingFacts?.[0]
-
-  const alarm =
-    metric.rag === 'red'
-      ? `${metric.title} is off target (${metric.valueText} vs ${metric.thresholdText}).`
-      : metric.rag === 'amber'
-        ? `${metric.title} is near threshold (${metric.valueText} vs ${metric.thresholdText}).`
-        : `${metric.title} is on target (${metric.valueText} vs ${metric.thresholdText}).`
-
-  const insightParts = [meaning]
-  if (gap) insightParts.push(gap)
-  if (fact) insightParts.push(`Evidence: ${fact}.`)
-  const insight = insightParts.join(' ')
-
-  const action =
-    metric.rag === 'red'
-      ? `Prioritize this KPI immediately: assign an owner, run a 7-day improvement sprint, and review progress daily.`
-      : metric.rag === 'amber'
-        ? `Run one focused improvement experiment this week and monitor this KPI trend in the next review cycle.`
-        : `Maintain current operating rhythm and monitor weekly for regression risk.`
-
-  return { alarm, insight, action }
-}
+const NARRATIVE_PENDING = {
+  alarm: 'AI narrative pending.',
+  insight: 'AI narrative pending.',
+  action: 'AI narrative pending.',
+} satisfies Pick<Metric, 'alarm' | 'insight' | 'action'>
 
 function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMetric | null {
   switch (metricId) {
@@ -442,7 +421,7 @@ function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMe
 
     // --- Economics ---
     case 'metric.economics.cost_per_acquisition': {
-      // Proxy: total hiring cost / total applications (acquisition cost per application).
+      // Total hiring cost / total hires (cost per hire).
       // Sum cost per requisition once to avoid repeating across application rows.
       let totalCost = 0
       const seenReq = new Set<string>()
@@ -454,24 +433,73 @@ function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMe
         totalCost += r.totalHiringCost
       }
 
-      const appIds = new Set<string>()
-      for (const r of rows) {
-        if (r.applicationId) appIds.add(r.applicationId)
+      if (seenReq.size === 0) {
+        return {
+          valueText: 'N/A',
+          valueNum: undefined,
+          thresholdText: '< $2,500',
+          rag: 'amber',
+          supportingFacts: ['No hiring cost data in the current filter slice.'],
+        }
       }
-      const appCount = appIds.size || rows.length
-      if (appCount === 0 || !Number.isFinite(totalCost)) return null
 
-      const cpa = totalCost / appCount
-      const rag = ragForLowerIsBetter(cpa, 2500, 3200)
+      const hireIds = new Set<string>()
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]
+        if (r.status !== 'Hired') continue
+        hireIds.add(r.applicationId ?? `row:${i}`)
+      }
+      const hireCount = hireIds.size
+      if (!Number.isFinite(totalCost)) return null
+      if (hireCount === 0) {
+        return {
+          valueText: 'N/A',
+          valueNum: undefined,
+          thresholdText: '< $2,500',
+          rag: 'amber',
+          supportingFacts: [
+            `Total hiring cost (reqs with cost): ${seenReq.size}`,
+            'No hires in the current filter slice (Status = Hired).',
+          ],
+        }
+      }
+
+      const cph = totalCost / hireCount
+      const rag = ragForLowerIsBetter(cph, 2500, 3200)
       return {
-        valueNum: cpa,
-        valueText: fmtCurrency(cpa),
+        valueNum: cph,
+        valueText: fmtCurrency(cph),
         thresholdText: '< $2,500',
         rag,
         supportingFacts: [
-          `Applications: ${fmtNumber(appCount, 0)}`,
+          `Hires: ${fmtNumber(hireCount, 0)}`,
           `Requisitions with cost: ${seenReq.size}`,
         ],
+      }
+    }
+    case 'metric.economics.presented_vs_offers': {
+      // Offer yield from presented/interviewed candidates.
+      // Proxy: offers made / interviewed candidates (unique).
+      const uniq = uniqBy(rows, (r) => r.candidateId)
+      const interviewed = uniq.filter((r) => r.interviewDate != null).length
+      if (interviewed === 0) {
+        return {
+          valueText: 'N/A',
+          valueNum: undefined,
+          thresholdText: '> 25%',
+          rag: 'amber',
+          supportingFacts: ['No interviewed candidates in the current filter slice.'],
+        }
+      }
+      const offers = uniq.filter((r) => r.offerMade === true).length
+      const pct = (offers / interviewed) * 100
+      const rag = ragForHigherIsBetter(pct, 25, 20)
+      return {
+        valueNum: pct,
+        valueText: fmtPct(pct, 1),
+        thresholdText: '> 25%',
+        rag,
+        supportingFacts: [`Interviewed: ${interviewed}`, `Offers made: ${offers}`],
       }
     }
     case 'metric.economics.job_posting_effectiveness': {
@@ -607,7 +635,14 @@ export function computeMetricsByCluster({
             : undefined,
         }
 
-        if (!rows) return unavailableMetric
+        if (!rows) {
+          return {
+            ...unavailableMetric,
+            alarm: 'Upload a dataset to generate KPI insights.',
+            insight: 'Upload a dataset to generate KPI insights.',
+            action: 'Upload a dataset to generate KPI insights.',
+          }
+        }
 
         const notImplemented = !IMPLEMENTED_METRIC_IDS.has(tmpl.id)
         return {
@@ -631,10 +666,9 @@ export function computeMetricsByCluster({
         rag: computed.rag,
         supportingFacts: computed.supportingFacts,
       }
-      const narrative = rows ? buildNarrative(computedMetric) : {}
       return {
         ...computedMetric,
-        ...narrative,
+        ...NARRATIVE_PENDING,
       }
     })
   }

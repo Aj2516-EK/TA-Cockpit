@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { ApplicationFactRow, Dataset } from '../runtime-data/types'
+import type { Metric } from '../model'
 import { computeStageDistribution, computeWeeklyTrend } from '../runtime-data/charts'
 import type { ReactNode } from 'react'
 
@@ -13,35 +14,161 @@ function pct(n: number) {
   return `${(n * 100).toFixed(1)}%`
 }
 
+function isFiniteNumber(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n)
+}
+
+function filterRowsForMetric(rows: ApplicationFactRow[], metricId: string) {
+  switch (metricId) {
+    case 'metric.readiness.qualified_candidates_availability':
+      return rows.filter(
+        (r) =>
+          r.criticalSkillFlag === true &&
+          isFiniteNumber(r.skillMatchPercentage) &&
+          r.skillMatchPercentage >= 80,
+      )
+    case 'metric.readiness.skill_readiness':
+      return rows.filter((r) => isFiniteNumber(r.skillMatchPercentage))
+    case 'metric.readiness.external_connections':
+      return rows.filter(
+        (r) =>
+          r.candidateType === 'External' &&
+          (((r.recruiterId ?? '').trim().length > 0) || (r.matchingHoursTotal ?? 0) > 0),
+      )
+    case 'metric.readiness.time_to_present':
+    case 'metric.readiness.critical_skill_capability':
+      return rows.filter((r) => r.criticalSkillFlag === true)
+    case 'metric.readiness.pool_variety':
+      return rows
+
+    case 'metric.momentum.time_to_next_step':
+      return rows.filter((r) => r.stageEnterDate && r.stageExitDate)
+    case 'metric.momentum.time_to_cv_response':
+      return rows.filter((r) => isFiniteNumber(r.recruiterResponseTimeHours))
+    case 'metric.momentum.time_spent_matching':
+      return rows.filter((r) => isFiniteNumber(r.matchingHoursTotal))
+    case 'metric.momentum.recruiting_experience_rating':
+      return rows.filter((r) => isFiniteNumber(r.candidateNps))
+
+    case 'metric.experience.incomplete_applications':
+      return rows.filter((r) => typeof r.applicationCompleted === 'boolean')
+    case 'metric.experience.time_to_apply':
+      return rows.filter((r) => r.applicationStartTime && r.applicationSubmitTime)
+    case 'metric.experience.ease_of_applying':
+      return rows.filter((r) => isFiniteNumber(r.applicationEaseRating))
+
+    case 'metric.diversity.diverse_attraction':
+      return rows.filter((r) => typeof r.diversityFlag === 'boolean')
+    case 'metric.diversity.diverse_pipeline':
+      return rows.filter((r) => r.status === 'Hired' && typeof r.diversityFlag === 'boolean')
+    case 'metric.diversity.active_applicants':
+      return rows.filter((r) => r.status === 'Active')
+
+    case 'metric.economics.cost_per_acquisition':
+      return rows.filter((r) => r.status === 'Hired' || isFiniteNumber(r.totalHiringCost))
+    case 'metric.economics.presented_vs_offers':
+    case 'metric.economics.interviewed_vs_offered':
+      return rows.filter((r) => r.interviewDate != null || r.offerMade === true)
+    case 'metric.economics.job_posting_effectiveness':
+      return rows.filter((r) => isFiniteNumber(r.jobViews) || isFiniteNumber(r.jobApplicationsReceived))
+    case 'metric.economics.hires_from_competitors':
+      return rows.filter((r) => r.status === 'Hired' && typeof r.isCompetitor === 'boolean')
+    case 'metric.economics.hm_feedback_time':
+      return rows.filter((r) => r.interviewDate && r.feedbackDate)
+    case 'metric.economics.jd_criteria_match':
+      return rows.filter((r) => isFiniteNumber(r.skillMatchPercentage))
+    default:
+      return rows
+  }
+}
+
+function lensDescription(metricId: string) {
+  switch (metricId) {
+    case 'metric.readiness.qualified_candidates_availability':
+      return 'Rows where critical skill flag is true and skill match >= 80.'
+    case 'metric.readiness.skill_readiness':
+      return 'Rows with a valid skill match percentage.'
+    case 'metric.readiness.external_connections':
+      return 'External candidates with recruiter activity or matching hours.'
+    case 'metric.readiness.time_to_present':
+    case 'metric.readiness.critical_skill_capability':
+      return 'Rows marked as critical skill requisitions.'
+    case 'metric.momentum.time_to_next_step':
+      return 'Rows with stage enter and exit dates.'
+    case 'metric.momentum.time_to_cv_response':
+      return 'Rows with recruiter response time populated.'
+    case 'metric.momentum.time_spent_matching':
+      return 'Rows with matching hours recorded.'
+    case 'metric.momentum.recruiting_experience_rating':
+      return 'Rows with candidate NPS available.'
+    case 'metric.experience.incomplete_applications':
+      return 'Rows with application completion flag available.'
+    case 'metric.experience.time_to_apply':
+      return 'Rows with application start and submit timestamps.'
+    case 'metric.experience.ease_of_applying':
+      return 'Rows with application ease rating available.'
+    case 'metric.diversity.diverse_attraction':
+      return 'Rows with diversity flag available.'
+    case 'metric.diversity.diverse_pipeline':
+      return 'Rows where Status = Hired with diversity flag available.'
+    case 'metric.diversity.active_applicants':
+      return 'Rows where Status = Active.'
+    case 'metric.economics.cost_per_acquisition':
+      return 'Rows with hires or requisitions that include hiring cost.'
+    case 'metric.economics.presented_vs_offers':
+    case 'metric.economics.interviewed_vs_offered':
+      return 'Rows with interview dates or offers made.'
+    case 'metric.economics.job_posting_effectiveness':
+      return 'Rows with job posting views/applications present.'
+    case 'metric.economics.hires_from_competitors':
+      return 'Rows where Status = Hired and competitor flag is available.'
+    case 'metric.economics.hm_feedback_time':
+      return 'Rows with interview and feedback dates.'
+    case 'metric.economics.jd_criteria_match':
+      return 'Rows with skill match percentage available.'
+    default:
+      return 'All rows in the current filter slice.'
+  }
+}
+
 export function ChartsDrawer({
   open,
   onClose,
   dataset,
   filteredRows,
+  focusMetric,
+  onClearFocus,
 }: {
   open: boolean
   onClose: () => void
   dataset: Dataset | null
   filteredRows: ApplicationFactRow[] | null
+  focusMetric?: Metric | null
+  onClearFocus?: () => void
 }) {
   const rows = filteredRows ?? (dataset?.rows ?? null)
+  const focusRows = useMemo(
+    () => (rows && focusMetric ? filterRowsForMetric(rows, focusMetric.id) : rows),
+    [rows, focusMetric],
+  )
+  const chartRows = focusRows ?? rows
 
-  const stageDist = useMemo(() => (rows ? computeStageDistribution(rows) : null), [rows])
-  const weekly = useMemo(() => (rows ? computeWeeklyTrend(rows) : null), [rows])
+  const stageDist = useMemo(() => (chartRows ? computeStageDistribution(chartRows) : null), [chartRows])
+  const weekly = useMemo(() => (chartRows ? computeWeeklyTrend(chartRows) : null), [chartRows])
 
   const weeklyPoints = weekly?.points ?? []
   const cappedWeekly = weeklyPoints.length > 24 ? weeklyPoints.slice(-24) : weeklyPoints
 
   const hires = useMemo(() => {
-    if (!rows) return 0
+    if (!chartRows) return 0
     const ids = new Set<string>()
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i]
+    for (let i = 0; i < chartRows.length; i++) {
+      const r = chartRows[i]
       if (r.status !== 'Hired') continue
       ids.add(r.applicationId ?? `row:${i}`)
     }
     return ids.size
-  }, [rows])
+  }, [chartRows])
 
   const applications = stageDist?.totalApplications ?? 0
   const hireRate = applications > 0 ? hires / applications : 0
@@ -66,6 +193,18 @@ export function ChartsDrawer({
       },
     }
   }, [dataset, rows, stageDist, weekly])
+
+  const lensStats = useMemo(() => {
+    if (!rows || !focusMetric || !focusRows) return null
+    const total = rows.length
+    const focused = focusRows.length
+    const coverage = total > 0 ? (focused / total) * 100 : 0
+    return {
+      total,
+      focused,
+      coverage,
+    }
+  }, [rows, focusMetric, focusRows])
 
   return (
     <>
@@ -94,21 +233,35 @@ export function ChartsDrawer({
               </span>
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                  Charts
+                  {focusMetric ? 'Metric Focus' : 'Charts'}
                 </div>
                 <div className="text-[14px] font-bold text-slate-900 dark:text-white">
-                  {dataset ? dataset.name : 'No dataset loaded'}
+                  {focusMetric?.title ?? (dataset ? dataset.name : 'No dataset loaded')}
                 </div>
+                {focusMetric ? (
+                  <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Charts scoped to the selected KPI.</div>
+                ) : null}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
-              aria-label="Close charts"
-            >
-              <Icon name="close" className="text-[20px]" />
-            </button>
+            <div className="flex items-center gap-2">
+              {focusMetric && onClearFocus ? (
+                <button
+                  type="button"
+                  onClick={onClearFocus}
+                  className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                >
+                  Show all charts
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                aria-label="Close charts"
+              >
+                <Icon name="close" className="text-[20px]" />
+              </button>
+            </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
@@ -199,6 +352,25 @@ export function ChartsDrawer({
                     </button>
                   </div>
                 </div>
+
+                {focusMetric && lensStats ? (
+                  <Section title="Metric Lens Coverage">
+                    <Card>
+                      <div className="text-[12px] text-slate-600 dark:text-slate-300">
+                        This view filters charts to rows relevant to <span className="font-semibold">{focusMetric.title}</span>.
+                      </div>
+                      <div className="mt-2 text-[12px] text-slate-600 dark:text-slate-300">
+                        Lens rule: {lensDescription(focusMetric.id)}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
+                        <Stat label="Lens rows" value={fmt(lensStats.focused)} />
+                        <Stat label="Total rows" value={fmt(lensStats.total)} />
+                        <Stat label="Coverage" value={`${lensStats.coverage.toFixed(1)}%`} />
+                        <Stat label="Cluster" value={focusMetric.id.split('.')[1] ?? '—'} />
+                      </div>
+                    </Card>
+                  </Section>
+                ) : null}
 
                 <Section title="Funnel: Current Stage Distribution">
                   <Card>

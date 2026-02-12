@@ -74,6 +74,7 @@ export default async function handler(req: Request): Promise<Response> {
       '- Treat any static dataset profile in retrieved docs as background-only, not as current uploaded data.\n' +
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
       '- Keep answers concise and decision-ready.\n' +
+      '- If metricSnapshot values are all "--" or "N/A", state that no dataset is loaded or filters returned zero rows and ask to open filters.\n' +
       '\n' +
       'Tool usage guidance:\n' +
       '- If the user asks to change or view filters, call openFilters.\n' +

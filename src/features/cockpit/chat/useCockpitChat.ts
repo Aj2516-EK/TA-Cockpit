@@ -27,15 +27,26 @@ export function useCockpitChat({
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
+  const contextRef = useRef({
+    activeCluster,
+    metricSnapshot,
+    insightContext,
+    filters,
+  })
+
+  useEffect(() => {
+    contextRef.current = { activeCluster, metricSnapshot, insightContext, filters }
+  }, [activeCluster, metricSnapshot, insightContext, filters])
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
         // Keep dashboard context out of the user-visible chat history.
         // This is attached to every request server-side via the transport body.
-        body: () => ({ activeCluster, metricSnapshot, insightContext, filters }),
+        body: () => ({ ...contextRef.current }),
       }),
-    [activeCluster, metricSnapshot, insightContext, filters],
+    [],
   )
 
   const chat = useChat<CockpitUIMessage>({

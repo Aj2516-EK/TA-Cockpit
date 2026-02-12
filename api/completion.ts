@@ -40,10 +40,15 @@ export default async function handler(req: Request): Promise<Response> {
     insightContext: body.insightContext ?? null,
   }
 
+  const abortCtrl = new AbortController()
+  const timeoutMs = 45_000
+  const timeout = setTimeout(() => abortCtrl.abort(), timeoutMs)
+
   const result = streamText({
     model: openrouter(modelName),
     temperature: 0.1,
     maxOutputTokens: 500,
+    abortSignal: abortCtrl.signal,
     system:
       'You are a Senior Strategic Talent Acquisition Analyst for an airline HR executive dashboard.\n' +
       'Hard rules:\n' +
@@ -77,10 +82,16 @@ export default async function handler(req: Request): Promise<Response> {
       },
     },
     prompt,
+    onFinish: () => {
+      clearTimeout(timeout)
+    },
   })
 
   // useCompletion (default streamProtocol="data") expects UI message chunks, so we return UI stream.
   return result.toUIMessageStreamResponse({
-    onError: getPublicAiErrorMessage,
+    onError: (err) => {
+      clearTimeout(timeout)
+      return getPublicAiErrorMessage(err)
+    },
   })
 }

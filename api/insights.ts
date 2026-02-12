@@ -76,6 +76,10 @@ export default async function handler(req: Request): Promise<Response> {
   const { activeCluster, filters, metricSnapshot, insightContext } = parsed.data
   const metrics = metricSnapshot?.metrics ?? []
 
+  const abortCtrl = new AbortController()
+  const timeoutMs = 35_000
+  const timeout = setTimeout(() => abortCtrl.abort(), timeoutMs)
+
   try {
     const openrouter = createOpenRouter({ apiKey: requiredEnv('OPENROUTER_API_KEY') })
     const modelName = getChatModel()
@@ -87,6 +91,7 @@ export default async function handler(req: Request): Promise<Response> {
       model: openrouter(modelName),
       temperature: 0.15,
       schema: ResponseSchema,
+      abortSignal: abortCtrl.signal,
       prompt:
         'You are a senior TA analytics advisor.\n' +
         'Return concise, executive-ready insights grounded only in provided data.\n' +
@@ -123,5 +128,7 @@ export default async function handler(req: Request): Promise<Response> {
       },
       { status: 200 },
     )
+  } finally {
+    clearTimeout(timeout)
   }
 }

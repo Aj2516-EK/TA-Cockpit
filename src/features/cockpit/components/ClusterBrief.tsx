@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
+import { MessageResponse } from '@/components/ai-elements/message'
 import type { ClusterId, Metric } from '../model'
 import { useClusterInsights } from '../insights/useClusterInsights'
 import type { InsightContext } from '../runtime-data/insights'
@@ -27,6 +28,7 @@ export function ClusterBrief({
   const contextKey = `${activeCluster}:${contextVersion}`
   const [lastGeneratedContextKey, setLastGeneratedContextKey] = useState<string | null>(null)
   const stale = lastGeneratedContextKey != null && lastGeneratedContextKey !== contextKey
+  const autoGenerateRef = useRef<Set<string>>(new Set())
 
   const { data, generate, isLoading, error, stop } = useClusterInsights({
     activeCluster,
@@ -44,6 +46,8 @@ export function ClusterBrief({
     if (!autoGenerateEnabled) return
     if (isLoading) return
     if (lastGeneratedContextKey === contextKey) return
+    if (autoGenerateRef.current.has(contextKey)) return
+    autoGenerateRef.current.add(contextKey)
 
     let cancelled = false
     ;(async () => {
@@ -119,7 +123,7 @@ export function ClusterBrief({
         {isLoading ? (
           <InsightsLoadingState />
         ) : formattedText ? (
-          <div className="whitespace-pre-wrap">{formattedText}</div>
+          <MessageResponse>{formattedText}</MessageResponse>
         ) : (
           <div className="text-slate-500 dark:text-slate-400">
             Click Generate to produce data-grounded AI insights for this cluster.

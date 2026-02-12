@@ -155,7 +155,13 @@ export function meaningForMetric(metricId: string): { meaning: string; formula: 
       return {
         meaning:
           'Cost efficiency of hiring. Rising CPA can indicate channel mix issues, excessive paid spend, or low conversion.',
-        formula: 'Proxy: total hiring cost per application (sum cost per requisition once / unique applications).',
+        formula: 'Total hiring cost per hire (sum cost per requisition once / unique hires).',
+      }
+    case 'metric.economics.presented_vs_offers':
+      return {
+        meaning:
+          'Offer yield from presented/interviewed candidates. Low yield means too many candidates reach panels without converting to offers.',
+        formula: 'Proxy: offers made / interviewed candidates (unique), shown as a percent.',
       }
     case 'metric.economics.job_posting_effectiveness':
       return {
@@ -195,4 +201,3 @@ export function meaningForMetric(metricId: string): { meaning: string; formula: 
     formula: 'See supporting facts for the current computation inputs/proxies.',
   }
 }
-
