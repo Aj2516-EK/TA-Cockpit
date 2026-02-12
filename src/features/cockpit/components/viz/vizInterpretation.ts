@@ -1,6 +1,5 @@
 import { parseThreshold } from '../../model/metricExplain'
 import type { Metric } from '../../model'
-import type { VizCategory } from './vizUtils'
 import { getVizCategory } from './vizUtils'
 
 /**

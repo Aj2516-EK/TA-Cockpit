@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useId, useMemo, useRef } from 'react'
 import { useChat } from '@ai-sdk/react'
 import {
   DefaultChatTransport,
@@ -8,6 +8,20 @@ import type { ClusterId, Metric } from '../model'
 import type { CockpitUIMessage } from './tools'
 import type { InsightContext } from '../runtime-data/insights'
 import type { Filters } from '../runtime-data/types'
+
+type ChatContextSnapshot = {
+  activeCluster: ClusterId
+  metricSnapshot: {
+    activeCluster: ClusterId
+    metrics: Array<
+      Pick<Metric, 'id' | 'title' | 'valueText' | 'thresholdText' | 'rag' | 'supportingFacts'>
+    >
+  }
+  insightContext: InsightContext | null
+  filters: Filters
+}
+
+const chatContextStore = new Map<string, ChatContextSnapshot>()
 
 export function useCockpitChat({
   activeCluster,
@@ -27,16 +41,22 @@ export function useCockpitChat({
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
-  const contextRef = useRef({
-    activeCluster,
-    metricSnapshot,
-    insightContext,
-    filters,
-  })
+  const contextStoreKey = useId()
 
   useEffect(() => {
-    contextRef.current = { activeCluster, metricSnapshot, insightContext, filters }
-  }, [activeCluster, metricSnapshot, insightContext, filters])
+    chatContextStore.set(contextStoreKey, {
+      activeCluster,
+      metricSnapshot,
+      insightContext,
+      filters,
+    })
+  }, [activeCluster, contextStoreKey, filters, insightContext, metricSnapshot])
+
+  useEffect(() => {
+    return () => {
+      chatContextStore.delete(contextStoreKey)
+    }
+  }, [contextStoreKey])
 
   const transport = useMemo(
     () =>
@@ -44,9 +64,9 @@ export function useCockpitChat({
         api: '/api/chat',
         // Keep dashboard context out of the user-visible chat history.
         // This is attached to every request server-side via the transport body.
-        body: () => ({ ...contextRef.current }),
+        body: () => ({ ...(chatContextStore.get(contextStoreKey) ?? {}) }),
       }),
-    [],
+    [contextStoreKey],
   )
 
   const chat = useChat<CockpitUIMessage>({

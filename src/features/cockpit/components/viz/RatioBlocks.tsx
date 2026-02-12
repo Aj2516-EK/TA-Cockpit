@@ -1,5 +1,4 @@
 import type { Metric } from '../../model'
-import type { ParsedThreshold } from '../../model/metricExplain'
 import { ragColor } from './vizUtils'
 
 /**
@@ -8,13 +7,10 @@ import { ragColor } from './vizUtils'
  */
 export function RatioBlocks({
   metric,
-  threshold,
 }: {
   metric: Metric
-  threshold: ParsedThreshold
 }) {
   const value = metric.valueNum ?? 0
-  const target = threshold.value ?? 4
   const color = ragColor(metric.rag)
 
   // value is ratio like 3.2 (interviews per offer)

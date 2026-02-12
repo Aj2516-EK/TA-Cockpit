@@ -63,7 +63,8 @@ export function ClusterBrief({
   useEffect(() => {
     if (!data) return
     if (lastGeneratedContextKey === contextKey) return
-    setLastGeneratedContextKey(contextKey)
+    const t = window.setTimeout(() => setLastGeneratedContextKey(contextKey), 0)
+    return () => window.clearTimeout(t)
   }, [contextKey, data, lastGeneratedContextKey])
 
   const formattedText = useMemo(() => {

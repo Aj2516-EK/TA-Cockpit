@@ -47,7 +47,7 @@ export function MetricViz({
       gauge = <BulletBar metric={metric} threshold={threshold} />
       break
     case 'ratio':
-      gauge = <RatioBlocks metric={metric} threshold={threshold} />
+      gauge = <RatioBlocks metric={metric} />
       break
   }
 
