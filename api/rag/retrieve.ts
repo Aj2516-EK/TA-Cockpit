@@ -1,7 +1,7 @@
-import type { KnowledgeBaseDoc } from '../knowledge-base'
-import type { RetrievalMode } from './types'
-import { keywordRetrieveDocs } from './keyword'
-import { qdrantRetrieveDocs } from './qdrant'
+import type { KnowledgeBaseDoc } from '../knowledge-base/index.js'
+import type { RetrievalMode } from './types.js'
+import { keywordRetrieveDocs } from './keyword.js'
+import { qdrantRetrieveDocs } from './qdrant.js'
 
 export async function retrieveDocs(
   docs: KnowledgeBaseDoc[],

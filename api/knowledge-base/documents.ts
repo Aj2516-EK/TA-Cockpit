@@ -1,5 +1,5 @@
-import type { KnowledgeBaseDoc } from './types'
-import kbDocsRaw from './kb-docs.json'
+import type { KnowledgeBaseDoc } from './types.js'
+import kbDocsRaw from './kb-docs.json' assert { type: 'json' }
 
 function validateDocs(raw: unknown): KnowledgeBaseDoc[] {
   if (!Array.isArray(raw)) throw new Error('knowledge-base/kb-docs.json must be an array')

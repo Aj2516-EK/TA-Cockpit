@@ -1,8 +1,8 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { generateObject } from 'ai'
 import { z } from 'zod'
-import { getChatModel, requiredEnv } from './env'
-import { getPublicAiErrorMessage } from './errors'
+import { getChatModel, requiredEnv } from './env.js'
+import { getPublicAiErrorMessage } from './errors.js'
 
 export const config = {
   runtime: 'edge',

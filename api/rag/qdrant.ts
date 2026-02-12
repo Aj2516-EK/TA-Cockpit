@@ -1,4 +1,4 @@
-import type { KnowledgeBaseCluster, KnowledgeBaseDoc } from '../knowledge-base'
+import type { KnowledgeBaseCluster, KnowledgeBaseDoc } from '../knowledge-base/index.js'
 import {
   getEmbeddingModel,
   getOpenRouterApiKey,
@@ -7,7 +7,7 @@ import {
   getQdrantApiKey,
   getQdrantCollection,
   getQdrantUrl,
-} from '../env'
+} from '../env.js'
 
 type QdrantPoint = {
   id?: string | number

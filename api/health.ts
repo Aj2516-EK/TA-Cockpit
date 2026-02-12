@@ -1,4 +1,4 @@
-import { getChatModel, getEmbeddingModel, getEnv, getQdrantCollection, getQdrantUrl } from './env'
+import { getChatModel, getEmbeddingModel, getEnv, getQdrantCollection, getQdrantUrl } from './env.js'
 
 export const config = {
   runtime: 'edge',

@@ -1,4 +1,4 @@
-import type { KnowledgeBaseDoc } from '../knowledge-base'
+import type { KnowledgeBaseDoc } from '../knowledge-base/index.js'
 
 export function keywordRetrieveDocs(docs: KnowledgeBaseDoc[], query: string, k: number): KnowledgeBaseDoc[] {
   const q = query.toLowerCase()
@@ -19,4 +19,3 @@ export function keywordRetrieveDocs(docs: KnowledgeBaseDoc[], query: string, k: 
     .slice(0, Math.max(1, Math.min(12, k)))
     .map((x) => x.d)
 }
-

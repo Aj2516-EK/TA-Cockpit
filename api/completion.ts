@@ -1,11 +1,11 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { streamText } from 'ai'
 import { z } from 'zod'
-import { KNOWLEDGE_BASE_DOCS } from './knowledge-base'
-import { getChatModel, requiredEnv } from './env'
-import { getPublicAiErrorMessage } from './errors'
-import { retrieveDocs } from './rag'
-import type { KnowledgeBaseDoc } from './knowledge-base'
+import { KNOWLEDGE_BASE_DOCS } from './knowledge-base/index.js'
+import { getChatModel, requiredEnv } from './env.js'
+import { getPublicAiErrorMessage } from './errors.js'
+import { retrieveDocs } from './rag/index.js'
+import type { KnowledgeBaseDoc } from './knowledge-base/index.js'
 
 export const config = {
   runtime: 'edge',
