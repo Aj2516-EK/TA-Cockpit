@@ -38,7 +38,7 @@ export function ClusterBrief({
   })
 
   async function onGenerate() {
-    const ok = await generate()
+    const ok = await generate({ force: true })
     if (ok) setLastGeneratedContextKey(contextKey)
   }
 
@@ -59,6 +59,12 @@ export function ClusterBrief({
       cancelled = true
     }
   }, [autoGenerateEnabled, contextKey, generate, isLoading, lastGeneratedContextKey])
+
+  useEffect(() => {
+    if (!data) return
+    if (lastGeneratedContextKey === contextKey) return
+    setLastGeneratedContextKey(contextKey)
+  }, [contextKey, data, lastGeneratedContextKey])
 
   const formattedText = useMemo(() => {
     if (!data) return ''

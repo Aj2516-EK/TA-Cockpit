@@ -18,6 +18,25 @@ type ChatRequestBody = {
   filters?: unknown
 }
 
+function extractLastUserPromptPreview(messages: UIMessage[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]
+    if (m.role !== 'user') continue
+
+    const parts = (m as { parts?: unknown[] }).parts
+    if (Array.isArray(parts)) {
+      for (const p of parts) {
+        if (!p || typeof p !== 'object') continue
+        const part = p as { type?: unknown; text?: unknown }
+        if (part.type === 'text' && typeof part.text === 'string' && part.text.trim()) {
+          return part.text.trim().slice(0, 120)
+        }
+      }
+    }
+  }
+  return ''
+}
+
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 })
 
@@ -46,8 +65,9 @@ export default async function handler(req: Request): Promise<Response> {
   const metricCount = Array.isArray((context.metricSnapshot as { metrics?: unknown[] } | null)?.metrics)
     ? ((context.metricSnapshot as { metrics?: unknown[] }).metrics?.length ?? 0)
     : 0
+  const promptPreview = extractLastUserPromptPreview(body.messages)
   console.info(
-    `[chat:${reqId}] start model=${modelName} fallbacks=${fallbackModels.join(',')} messages=${body.messages.length} cluster=${String(context.activeCluster)} metrics=${metricCount}`,
+    `[chat:${reqId}] start model=${modelName} fallbacks=${fallbackModels.join(',')} messages=${body.messages.length} cluster=${String(context.activeCluster)} metrics=${metricCount} prompt="${promptPreview}"`,
   )
 
   // Prevent indefinite "connecting" states when the upstream provider stalls.

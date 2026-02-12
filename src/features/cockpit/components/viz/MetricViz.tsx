@@ -8,11 +8,12 @@ import { ProgressBar } from './ProgressBar'
 import { StarDots } from './StarDots'
 import { RatioBlocks } from './RatioBlocks'
 import { Sparkline } from './Sparkline'
+import { getVizInterpretation, getSparklineInterpretation } from './vizInterpretation'
 
 /**
  * Renders the appropriate inline visualization for a metric
  * based on its category (percentage, time, count, rating, cost, ratio),
- * plus a sparkline trend if data is available.
+ * plus a sparkline trend if data is available, with interpretation text.
  */
 export function MetricViz({
   metric,
@@ -50,9 +51,21 @@ export function MetricViz({
       break
   }
 
+  const gaugeInterpretation = getVizInterpretation(metric)
+
+  // Calculate sparkline interpretation if available
+  let sparklineInterpretation = ''
+  if (trend && trend.length >= 2) {
+    const first = trend[0].value
+    const last = trend[trend.length - 1].value
+    const pctChange = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : 0
+    sparklineInterpretation = getSparklineInterpretation(trend.length, pctChange)
+  }
+
   return (
-    <div>
+    <div className="space-y-3">
       {gauge}
+
       {trend && trend.length >= 2 && (
         <Sparkline
           points={trend}
@@ -60,6 +73,21 @@ export function MetricViz({
           thresholdValue={threshold.value}
         />
       )}
+
+      {/* Interpretation text */}
+      <div className="space-y-1.5 rounded-xl bg-slate-900/3 px-3 py-2 dark:bg-white/3">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          How to read this
+        </div>
+        <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+          {gaugeInterpretation}
+        </p>
+        {sparklineInterpretation && (
+          <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+            {sparklineInterpretation}
+          </p>
+        )}
+      </div>
     </div>
   )
 }

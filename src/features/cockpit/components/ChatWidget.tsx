@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { ClusterId, Metric } from '../model'
@@ -7,13 +7,6 @@ import { ChatParts } from '../chat/ChatParts'
 import type { CockpitUIMessage } from '../chat/tools'
 import type { InsightContext } from '../runtime-data/insights'
 import type { Filters } from '../runtime-data/types'
-
-type DebugLog = {
-  ts: string
-  event: string
-  detail?: string
-  level?: 'info' | 'warn' | 'error'
-}
 
 export function ChatWidget({
   activeCluster,
@@ -49,93 +42,6 @@ export function ChatWidget({
 
   const [input, setInput] = useState('')
   const [contextUpdated, setContextUpdated] = useState(false)
-  const [logsOpen, setLogsOpen] = useState(false)
-  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
-  const prevStatusRef = useRef<string>('ready')
-  const prevMessagesLenRef = useRef<number>(0)
-
-  const pushLog = useCallback((event: string, detail?: string, level: 'info' | 'warn' | 'error' = 'info') => {
-    const entry: DebugLog = {
-      ts: new Date().toISOString(),
-      event,
-      detail,
-      level,
-    }
-    setDebugLogs((logs) => [entry, ...logs].slice(0, 50))
-  }, [])
-
-  const runHealthCheck = useCallback(
-    async (reason: string) => {
-      try {
-        const res = await fetch('/api/health', { method: 'GET' })
-        const text = await res.text()
-        if (!res.ok) {
-          pushLog('Health check failed', `${reason} | status=${res.status} | ${text.slice(0, 200)}`, 'warn')
-          return
-        }
-        const payload = JSON.parse(text) as { hasOpenRouterKey?: boolean; chatModel?: string }
-        pushLog(
-          'Health check OK',
-          `${reason} | hasOpenRouterKey=${Boolean(payload.hasOpenRouterKey)} | chatModel=${payload.chatModel ?? 'unknown'}`,
-        )
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e)
-        pushLog('Health check error', `${reason} | ${msg}`, 'error')
-      }
-    },
-    [pushLog],
-  )
-
-  const runChatApiProbe = useCallback(async () => {
-    const ctrl = new AbortController()
-    const timeout = window.setTimeout(() => ctrl.abort(), 15_000)
-    const startedAt = performance.now()
-
-    try {
-      pushLog('Chat API probe', 'POST /api/chat (timeout 15s)')
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: ctrl.signal,
-        body: JSON.stringify({
-          messages: [
-            {
-              id: `probe-${Date.now()}`,
-              role: 'user',
-              parts: [{ type: 'text', text: 'Reply with exactly: pong' }],
-            },
-          ],
-          activeCluster,
-          metricSnapshot,
-          insightContext,
-          filters,
-        }),
-      })
-
-      const elapsed = Math.round(performance.now() - startedAt)
-      if (!res.ok) {
-        const text = await res.text()
-        pushLog('Chat API probe failed', `status=${res.status} in ${elapsed}ms | ${text.slice(0, 220)}`, 'error')
-        return
-      }
-
-      if (!res.body) {
-        pushLog('Chat API probe failed', `status=200 in ${elapsed}ms | empty response body`, 'warn')
-        return
-      }
-
-      const reader = res.body.getReader()
-      const first = await reader.read()
-      const chunkLen = first.value?.length ?? 0
-      pushLog('Chat API probe OK', `status=200 in ${elapsed}ms | firstChunkBytes=${chunkLen}`)
-      reader.releaseLock()
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e)
-      pushLog('Chat API probe error', msg, 'error')
-    } finally {
-      window.clearTimeout(timeout)
-    }
-  }, [activeCluster, filters, insightContext, metricSnapshot, pushLog])
 
   useEffect(() => {
     if (!open) return
@@ -146,68 +52,19 @@ export function ChatWidget({
   useEffect(() => {
     if (!open) return
     // Avoid synchronous setState inside effects (eslint react-hooks/set-state-in-effect).
-    const tLog = window.setTimeout(() => pushLog('Context updated', `contextVersion=${contextVersion}`), 0)
     const tShow = window.setTimeout(() => setContextUpdated(true), 0)
     const tHide = window.setTimeout(() => setContextUpdated(false), 1600)
     return () => {
-      window.clearTimeout(tLog)
       window.clearTimeout(tShow)
       window.clearTimeout(tHide)
     }
-  }, [contextVersion, open, pushLog])
-
-  useEffect(() => {
-    if (prevStatusRef.current === status) return
-    const prev = prevStatusRef.current
-    const tLog = window.setTimeout(() => pushLog('Status changed', `${prev} -> ${status}`), 0)
-    prevStatusRef.current = status
-    return () => window.clearTimeout(tLog)
-  }, [status, pushLog])
-
-  useEffect(() => {
-    if (messages.length <= prevMessagesLenRef.current) return
-    const last = messages[messages.length - 1]
-    const role = last?.role ?? 'unknown'
-    const tLog = window.setTimeout(() => pushLog('Message received', `role=${role} | total=${messages.length}`), 0)
-    prevMessagesLenRef.current = messages.length
-    return () => window.clearTimeout(tLog)
-  }, [messages, pushLog])
-
-  useEffect(() => {
-    if (!error) return
-    const msg = error.message || 'unknown error'
-    const tLog = window.setTimeout(() => pushLog('Chat error', msg, 'error'), 0)
-    return () => window.clearTimeout(tLog)
-  }, [error, pushLog])
-
-  useEffect(() => {
-    if (status !== 'submitted') return
-    const tNow = window.setTimeout(() => {
-      void runHealthCheck('request_start')
-    }, 0)
-    const t = window.setTimeout(() => {
-      void runHealthCheck('connecting>4s')
-    }, 4000)
-    const tWarn = window.setTimeout(() => {
-      pushLog(
-        'Still connecting',
-        'No model response after 12s. This is usually provider queueing, timeout, or policy block.',
-        'warn',
-      )
-    }, 12_000)
-    return () => {
-      window.clearTimeout(tNow)
-      window.clearTimeout(t)
-      window.clearTimeout(tWarn)
-    }
-  }, [status, runHealthCheck, pushLog])
+  }, [contextVersion, open])
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     const text = input.trim()
     if (!text || status !== 'ready') return
 
-    pushLog('User prompt sent', `${text.slice(0, 120)}${text.length > 120 ? '...' : ''}`)
     sendMessage({ text })
     setInput('')
   }
@@ -274,73 +131,6 @@ export function ChatWidget({
                 : 'Something went wrong. If you are running locally, make sure you are using `vercel dev` (not `vite`).'}
             </div>
           )}
-
-          <div className="mb-3 rounded-[14px] border border-slate-900/10 bg-white/60 p-2.5 dark:border-white/10 dark:bg-white/5">
-            <button
-              type="button"
-              onClick={() => setLogsOpen((v) => !v)}
-              className="flex w-full items-center justify-between gap-2 text-left text-[12px] font-semibold text-slate-700 dark:text-slate-200"
-            >
-              <span className="inline-flex items-center gap-1.5">
-                <Icon name="terminal" className="text-[15px]" />
-                AI Diagnostics
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="rounded-full bg-slate-900/8 px-2 py-0.5 text-[10px] uppercase tracking-wider dark:bg-white/10">
-                  {debugLogs.length} logs
-                </span>
-                <Icon name={logsOpen ? 'expand_less' : 'expand_more'} className="text-[16px]" />
-              </span>
-            </button>
-
-            {logsOpen && (
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void runHealthCheck('manual')}
-                    className="rounded-xl bg-slate-900/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
-                  >
-                    Check API Health
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void runChatApiProbe()}
-                    className="rounded-xl bg-slate-900/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
-                  >
-                    Probe Chat API
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const text = debugLogs
-                        .slice()
-                        .reverse()
-                        .map((l) => `${l.ts} [${l.level ?? 'info'}] ${l.event}${l.detail ? ` :: ${l.detail}` : ''}`)
-                        .join('\n')
-                      await navigator.clipboard.writeText(text)
-                      pushLog('Diagnostics copied', `lines=${debugLogs.length}`)
-                    }}
-                    className="rounded-xl bg-slate-900/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
-                  >
-                    Copy logs
-                  </button>
-                </div>
-                <div className="max-h-40 overflow-y-auto rounded-xl border border-slate-900/10 bg-slate-950 p-2 font-mono text-[10px] text-emerald-300 dark:border-white/10">
-                  {debugLogs.length === 0 ? (
-                    <div className="text-slate-400">No logs yet.</div>
-                  ) : (
-                    debugLogs.map((l, i) => (
-                      <div key={`${l.ts}-${i}`} className="leading-relaxed">
-                        {l.ts} [{l.level ?? 'info'}] {l.event}
-                        {l.detail ? ` :: ${l.detail}` : ''}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
 
           <div className="space-y-3">
             {messages.length === 0 && (

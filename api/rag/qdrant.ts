@@ -140,10 +140,16 @@ export async function qdrantRetrieveDocs(
   k: number,
 ): Promise<KnowledgeBaseDoc[] | null> {
   // Skip vector retrieval for tiny greetings.
-  if ((query ?? '').trim().length < 8) return null
+  if ((query ?? '').trim().length < 8) {
+    console.info('[rag:qdrant] skipped for short query')
+    return null
+  }
 
   const qdrantUrl = getQdrantUrl()
-  if (!qdrantUrl) return null
+  if (!qdrantUrl) {
+    console.info('[rag:qdrant] missing QDRANT_URL')
+    return null
+  }
 
   const apiKey = getQdrantApiKey()
   const collection = getQdrantCollection()
@@ -190,6 +196,7 @@ export async function qdrantRetrieveDocs(
     if (parsed) docs.push(parsed)
   }
 
+  console.info(`[rag:qdrant] points=${points.length} parsedDocs=${docs.length} k=${limit}`)
+
   return docs
 }
-

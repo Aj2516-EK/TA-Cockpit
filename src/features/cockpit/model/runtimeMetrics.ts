@@ -265,11 +265,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       }
       const mean = avg(deltas)
       if (!isFiniteNumber(mean)) return null
-      const rag = ragForLowerIsBetter(mean, 3.0, 4.0)
+      const rag = ragForLowerIsBetter(mean, 5.0, 6.0)
       return {
         valueNum: mean,
         valueText: fmtDays(mean, 1),
-        thresholdText: '< 3.0 days',
+        thresholdText: '< 5.0 days',
         rag,
         supportingFacts: [`Rows with stage enter/exit: ${deltas.length}`],
       }
@@ -310,11 +310,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       if (withFlag.length === 0) return null
       const incomplete = withFlag.filter((r) => r.applicationCompleted === false).length
       const pct = (incomplete / withFlag.length) * 100
-      const rag = ragForLowerIsBetter(pct, 15, 20)
+      const rag = ragForLowerIsBetter(pct, 20, 25)
       return {
         valueNum: pct,
         valueText: fmtPct(pct, 1),
-        thresholdText: '< 15%',
+        thresholdText: '< 20%',
         rag,
         supportingFacts: [`Candidates with completion flag: ${withFlag.length}`],
       }
@@ -465,11 +465,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       }
 
       const cph = totalCost / hireCount
-      const rag = ragForLowerIsBetter(cph, 2500, 3200)
+      const rag = ragForLowerIsBetter(cph, 4000, 4500)
       return {
         valueNum: cph,
         valueText: fmtCurrency(cph),
-        thresholdText: '< $2,500',
+        thresholdText: '< $4,000',
         rag,
         supportingFacts: [
           `Hires: ${fmtNumber(hireCount, 0)}`,
