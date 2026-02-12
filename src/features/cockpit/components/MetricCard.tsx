@@ -3,6 +3,8 @@ import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { Metric } from '../model'
 import { ragCardClass, ragPillClass } from '../ui/ragStyles'
+import { MetricViz } from './viz/MetricViz'
+import type { TrendPoint } from '../runtime-data/trends'
 
 const ASSIGNEES = ['John', 'Jerry', 'Jack', 'Jina', 'Jisha', 'Jamal']
 
@@ -17,7 +19,7 @@ export function MetricCard({
   metric,
   expanded,
   onToggle,
-  onVisualize,
+  trend,
   assignment,
   onAssign,
   onClearAssignment,
@@ -25,12 +27,13 @@ export function MetricCard({
   metric: Metric
   expanded: boolean
   onToggle: () => void
-  onVisualize: () => void
+  trend?: TrendPoint[]
   assignment?: MetricAssignment
   onAssign: (assignment: MetricAssignment) => void
   onClearAssignment: () => void
 }) {
   const contentId = `${metric.id}-content`
+  const [vizOpen, setVizOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [assignee, setAssignee] = useState(assignment?.owner ?? ASSIGNEES[0])
   const [note, setNote] = useState(assignment?.note ?? '')
@@ -78,12 +81,17 @@ export function MetricCard({
           type="button"
           onClick={(event) => {
             event.stopPropagation()
-            onVisualize()
+            setVizOpen((v) => !v)
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white ring-1 ring-[color:var(--ta-primary)]/40 transition hover:brightness-110 active:scale-[0.98]"
+          className={cn(
+            'inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-wider ring-1 transition active:scale-[0.98]',
+            vizOpen
+              ? 'bg-[color:var(--ta-primary)] text-white ring-[color:var(--ta-primary)]/40 hover:brightness-110'
+              : 'bg-[color:var(--ta-primary)]/10 text-[color:var(--ta-primary)] ring-[color:var(--ta-primary)]/25 hover:bg-[color:var(--ta-primary)]/20',
+          )}
         >
           <Icon name="show_chart" className="text-[18px]" />
-          Visualize
+          {vizOpen ? 'Hide Chart' : 'Visualize'}
         </button>
         <button
           type="button"
@@ -97,6 +105,18 @@ export function MetricCard({
           <Icon name="assignment_ind" className="text-[18px]" />
           {assignment ? 'Reassign' : 'Assign Owner'}
         </button>
+      </div>
+
+      {/* Inline visualization — toggled by Visualize button */}
+      <div className={cn('grid transition-all duration-300', vizOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+        <div className="min-h-0 overflow-hidden">
+          <div className="mt-3 rounded-[18px] border border-slate-900/10 bg-white/55 p-3 dark:border-white/10 dark:bg-white/5">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+              {metric.title} — Trend & Gauge
+            </div>
+            <MetricViz metric={metric} trend={trend} />
+          </div>
+        </div>
       </div>
 
       <div className={cn('grid transition-all', expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>

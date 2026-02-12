@@ -9,12 +9,12 @@ import { ChatWidget } from './components/ChatWidget'
 import { ClusterBrief } from './components/ClusterBrief'
 import { HealthScoreRing } from './components/HealthScoreRing'
 import { DataInspectorDrawer } from './components/DataInspectorDrawer'
-import { ChartsDrawer } from './components/ChartsDrawer'
 import { InsightDrawer } from './components/InsightDrawer'
 import type { Dataset, Filters } from './runtime-data/types'
 import { parseUploadToDataset } from './runtime-data/parse'
 import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/filters'
 import { computeInsightContext } from './runtime-data/insights'
+import { computeAllMetricTrends } from './runtime-data/trends'
 
 export function CockpitPage() {
   const [activeCluster, setActiveCluster] = useState<ClusterId>('readiness')
@@ -23,8 +23,6 @@ export function CockpitPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dataInspectorOpen, setDataInspectorOpen] = useState(false)
-  const [chartsOpen, setChartsOpen] = useState(false)
-  const [chartsMetricId, setChartsMetricId] = useState<string | null>(null)
   const [dataset, setDataset] = useState<Dataset | null>(null)
   const [filters, setFilters] = useState<Filters>({})
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -89,6 +87,14 @@ export function CockpitPage() {
       currentMetrics.map((m) => (metricNarratives[m.id] ? { ...m, ...metricNarratives[m.id] } : m)),
     [currentMetrics, metricNarratives],
   )
+  const currentMetricTrends = useMemo(() => {
+    if (!filteredRows || currentMetrics.length === 0) return {}
+    return computeAllMetricTrends(
+      currentMetrics.map((m) => m.id),
+      filteredRows,
+    )
+  }, [filteredRows, currentMetrics])
+
   const metricById = useMemo(
     () =>
       new Map(
@@ -266,10 +272,6 @@ export function CockpitPage() {
                 datasetLabel={datasetLabel}
                 isUploading={isUploading}
                 onOpenDataInspector={() => setDataInspectorOpen(true)}
-                onOpenCharts={() => {
-                  setChartsMetricId(null)
-                  setChartsOpen(true)
-                }}
                 onUpload={async (file) => {
                   if (isUploading) return
                   setUploadError(null)
@@ -348,10 +350,7 @@ export function CockpitPage() {
                   metrics={currentMetricsWithNarratives}
                   expanded={expanded}
                   onToggleMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: !s[metricId] }))}
-                  onVisualizeMetric={(metricId) => {
-                    setChartsMetricId(metricId)
-                    setChartsOpen(true)
-                  }}
+                  trends={currentMetricTrends}
                   assignments={metricAssignments}
                   onAssignMetric={handleAssignMetric}
                   onClearAssignment={handleClearAssignment}
@@ -385,14 +384,6 @@ export function CockpitPage() {
         filters={filters}
         metricSnapshot={metricSnapshot}
         allMetrics={allMetrics}
-      />
-      <ChartsDrawer
-        open={chartsOpen}
-        onClose={() => setChartsOpen(false)}
-        dataset={dataset}
-        filteredRows={filteredRows}
-        focusMetric={chartsMetricId ? metricById.get(chartsMetricId) ?? null : null}
-        onClearFocus={() => setChartsMetricId(null)}
       />
       <ChatWidget
         activeCluster={activeCluster}

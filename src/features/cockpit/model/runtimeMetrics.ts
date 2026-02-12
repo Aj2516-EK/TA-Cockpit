@@ -104,7 +104,7 @@ const NARRATIVE_PENDING = {
   action: 'AI narrative pending.',
 } satisfies Pick<Metric, 'alarm' | 'insight' | 'action'>
 
-function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMetric | null {
+export function computeMetric(metricId: string, rows: ApplicationFactRow[]): ComputedMetric | null {
   switch (metricId) {
     // --- Readiness ---
     case 'metric.readiness.qualified_candidates_availability': {

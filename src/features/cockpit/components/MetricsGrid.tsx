@@ -2,12 +2,13 @@ import { useMemo } from 'react'
 import type { Metric } from '../model'
 import { sortRag } from '../model'
 import { MetricCard, type MetricAssignment } from './MetricCard'
+import type { TrendPoint } from '../runtime-data/trends'
 
 export function MetricsGrid({
   metrics,
   expanded,
   onToggleMetric,
-  onVisualizeMetric,
+  trends,
   assignments,
   onAssignMetric,
   onClearAssignment,
@@ -15,7 +16,7 @@ export function MetricsGrid({
   metrics: Metric[]
   expanded: Record<string, boolean>
   onToggleMetric: (metricId: string) => void
-  onVisualizeMetric: (metricId: string) => void
+  trends: Record<string, TrendPoint[]>
   assignments: Record<string, MetricAssignment>
   onAssignMetric: (metricId: string, assignment: MetricAssignment) => void
   onClearAssignment: (metricId: string) => void
@@ -30,7 +31,7 @@ export function MetricsGrid({
           metric={m}
           expanded={!!expanded[m.id]}
           onToggle={() => onToggleMetric(m.id)}
-          onVisualize={() => onVisualizeMetric(m.id)}
+          trend={trends[m.id]}
           assignment={assignments[m.id]}
           onAssign={(assignment) => onAssignMetric(m.id, assignment)}
           onClearAssignment={() => onClearAssignment(m.id)}

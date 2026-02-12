@@ -9,7 +9,6 @@ export function TopBar({
   isUploading,
   onUpload,
   onOpenDataInspector,
-  onOpenCharts,
 }: {
   darkMode: boolean
   onToggleDarkMode: () => void
@@ -18,7 +17,6 @@ export function TopBar({
   isUploading: boolean
   onUpload: (file: File) => void
   onOpenDataInspector: () => void
-  onOpenCharts: () => void
 }) {
   return (
     <header
@@ -106,21 +104,6 @@ export function TopBar({
         >
           <Icon name="table_view" className="text-[18px]" />
           <span className="hidden text-[11px] font-bold sm:inline">Data</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={onOpenCharts}
-          className={cn(
-            'inline-flex items-center gap-2 rounded-2xl px-3 py-2',
-            'bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10',
-            'dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
-          )}
-          aria-label="Open charts"
-          title="Charts"
-        >
-          <Icon name="show_chart" className="text-[18px]" />
-          <span className="hidden text-[11px] font-bold sm:inline">Charts</span>
         </button>
 
         <button
