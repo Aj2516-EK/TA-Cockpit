@@ -26,11 +26,11 @@ export function TopBar({
       )}
     >
       <div className="min-w-0">
+        <div className="truncate text-[28px] font-bold tracking-tight text-slate-900 dark:text-white">
+          Fikrah
+        </div>
         <div className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
           Talent Acquisition Intelligence Cockpit
-        </div>
-        <div className="truncate text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
-          Executive KPI Cluster View
         </div>
       </div>
 
