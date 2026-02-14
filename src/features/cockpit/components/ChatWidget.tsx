@@ -6,6 +6,7 @@ import { useCockpitChat } from '../chat/useCockpitChat'
 import { ChatParts } from '../chat/ChatParts'
 import type { CockpitUIMessage } from '../chat/tools'
 import type { InsightContext } from '../runtime-data/insights'
+import type { TrendPoint } from '../runtime-data/trends'
 import type { Filters } from '../runtime-data/types'
 
 export function ChatWidget({
@@ -13,6 +14,7 @@ export function ChatWidget({
   metricSnapshot,
   insightContext,
   filters,
+  metricTrends,
   contextVersion,
   onOpenFilters,
   onExpandMetric,
@@ -24,6 +26,7 @@ export function ChatWidget({
   }
   insightContext: InsightContext | null
   filters: Filters
+  metricTrends: Record<string, TrendPoint[]> | null
   contextVersion: number
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
@@ -36,6 +39,7 @@ export function ChatWidget({
     metricSnapshot,
     insightContext,
     filters,
+    metricTrends,
     onOpenFilters,
     onExpandMetric,
   })

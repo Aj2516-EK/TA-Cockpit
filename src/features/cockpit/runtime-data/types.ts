@@ -126,8 +126,29 @@ export type ApplicationFactRow = {
   offerMade: boolean | null
   offerAccepted: boolean | null
 
+  // Candidate — skills & readiness (from 2_Candidate)
+  primarySkills: string | null
+  skillsetCategory: string | null
+  secondarySkills: string | null
+  skillProficiencyLevel: string | null
+  transferrableSkillset: string | null
+  transferableSkillMatchPct: number | null
+  futureReadinessScore: number | null
+  availabilityWindow: string | null
+  benchStrengthTag: string | null
+  mobilityPreference: string | null
+  upskillingInterest: boolean | null
+
+  // Requisition — enrichment (from 1_Requisition)
+  skillsRequired: string | null
+  hiringManagerId: string | null
+
   // Hiring cost (per req)
   totalHiringCost: number | null
+  advertisingCost: number | null
+  agencyFee: number | null
+  technologyCost: number | null
+  recruiterCost: number | null
 
   // Job posting analytics (per req)
   jobViews: number | null

@@ -7,14 +7,10 @@ import { ragCardClass, ragPillClass } from '../ui/ragStyles'
 import { MetricViz } from './viz/MetricViz'
 import type { TrendPoint } from '../runtime-data/trends'
 
-const ASSIGNEES = ['John', 'Jerry', 'Jack', 'Jina', 'Jisha', 'Jamal']
+import type { MetricAssignment } from '../runtime-data/assignments'
+export type { MetricAssignment } from '../runtime-data/assignments'
 
-export type MetricAssignment = {
-  owner: string
-  note: string
-  targetDate: string
-  assignedAt: string
-}
+const ASSIGNEES = ['John', 'Jerry', 'Jack', 'Jina', 'Jisha', 'Jamal']
 
 export function MetricCard({
   metric,
@@ -196,6 +192,8 @@ export function MetricCard({
                           note: note.trim(),
                           targetDate,
                           assignedAt,
+                          status: 'assigned',
+                          resolvedAt: null,
                         })
                         setAssignOpen(false)
                       }}

@@ -16,6 +16,7 @@ type ChatRequestBody = {
   metricSnapshot?: unknown
   insightContext?: unknown
   filters?: unknown
+  metricTrends?: Record<string, Array<{ week: string; value: number }>>
 }
 
 function extractLastUserPromptPreview(messages: UIMessage[]): string {
@@ -61,6 +62,7 @@ export default async function handler(req: Request): Promise<Response> {
     filters: body.filters ?? null,
     metricSnapshot: body.metricSnapshot ?? null,
     insightContext: body.insightContext ?? null,
+    metricTrends: body.metricTrends ?? null,
   }
   const metricCount = Array.isArray((context.metricSnapshot as { metrics?: unknown[] } | null)?.metrics)
     ? ((context.metricSnapshot as { metrics?: unknown[] }).metrics?.length ?? 0)
@@ -99,6 +101,7 @@ export default async function handler(req: Request): Promise<Response> {
       '- Only reference aggregates; do not request or output raw candidate-level rows.\n' +
       '- Keep answers concise and decision-ready.\n' +
       '- If metricSnapshot values are all "--" or "N/A", state that no dataset is loaded or filters returned zero rows and ask to open filters.\n' +
+      '- If metricTrends is present, use it to describe weekly direction for individual KPIs. Each entry maps metricId to an array of {week, value} points (ISO weeks, last 12 weeks). Compare recent weeks to earlier ones to describe improving/declining/stable trends. Do not dump raw arrays.\n' +
       '\n' +
       'Tool usage guidance:\n' +
       '- If the user asks to change or view filters, call openFilters.\n' +
