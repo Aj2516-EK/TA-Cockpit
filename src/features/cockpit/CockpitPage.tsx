@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { clusters, computeMetricsByCluster, summarizeKeyInsights, type ClusterId, type Metric } from './model'
+import { clusters, computeMetricsByCluster, type ClusterId, type Metric } from './model'
 import { SidebarNav } from './components/SidebarNav'
 import { TopBar } from './components/TopBar'
-import { KeyInsightsPanel } from './components/KeyInsightsPanel'
 import { MetricsGrid } from './components/MetricsGrid'
 import { FiltersDrawer } from './components/FiltersDrawer'
 import { ChatWidget } from './components/ChatWidget'
@@ -16,9 +15,18 @@ import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/
 import { computeInsightContext } from './runtime-data/insights'
 import { computeAllMetricTrends } from './runtime-data/trends'
 
-export function CockpitPage() {
-  const [activeCluster, setActiveCluster] = useState<ClusterId>('readiness')
-  const [darkMode, setDarkMode] = useState(true)
+export function CockpitPage({
+  initialCluster = 'readiness',
+  onNavigateHome,
+  darkMode,
+  onToggleDarkMode,
+}: {
+  initialCluster?: ClusterId
+  onNavigateHome?: () => void
+  darkMode: boolean
+  onToggleDarkMode: () => void
+}) {
+  const [activeCluster, setActiveCluster] = useState<ClusterId>(initialCluster)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -29,7 +37,7 @@ export function CockpitPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [insightsAutoGenerateArmed, setInsightsAutoGenerateArmed] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
-  const [insightMetricId, setInsightMetricId] = useState<string | null>(null)
+  const [insightMetricId] = useState<string | null>(null)
   const [insightOpen, setInsightOpen] = useState(false)
   const [pendingScrollMetricId, setPendingScrollMetricId] = useState<string | null>(null)
   const [metricNarratives, setMetricNarratives] = useState<
@@ -39,10 +47,6 @@ export function CockpitPage() {
   const [metricAssignments, setMetricAssignments] = useState<
     Record<string, { owner: string; note: string; targetDate: string; assignedAt: string }>
   >({})
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode)
-  }, [darkMode])
 
   useEffect(() => {
     try {
@@ -77,8 +81,6 @@ export function CockpitPage() {
     for (const c of clusters) out.push(...metricsByCluster[c.id])
     return out
   }, [metricsByCluster])
-
-  const keyInsights = useMemo(() => summarizeKeyInsights(allMetrics), [allMetrics])
 
   const currentCluster = clusters.find((c) => c.id === activeCluster)!
   const currentMetrics = metricsByCluster[activeCluster]
@@ -253,7 +255,7 @@ export function CockpitPage() {
 
   return (
     <div className="h-dvh w-dvw overflow-hidden bg-[radial-gradient(90%_80%_at_0%_0%,rgba(33,150,243,0.16),transparent_55%),radial-gradient(85%_70%_at_100%_0%,rgba(103,58,183,0.12),transparent_60%),radial-gradient(70%_80%_at_100%_100%,rgba(233,30,99,0.10),transparent_55%)]">
-      <div className="h-full bg-white/70 dark:bg-slate-950/40">
+      <div className="h-full bg-white dark:bg-slate-950/40">
         <div className="grid h-full grid-cols-[auto_1fr]">
           <SidebarNav
             clusters={clusters}
@@ -261,13 +263,14 @@ export function CockpitPage() {
             onSelectCluster={(id) => setActiveCluster(id)}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
+            onNavigateHome={onNavigateHome}
           />
 
           <div className="min-w-0">
             <div className="flex h-dvh min-w-0 flex-col">
               <TopBar
                 darkMode={darkMode}
-                onToggleDarkMode={() => setDarkMode((v) => !v)}
+                onToggleDarkMode={onToggleDarkMode}
                 onOpenFilters={() => setFiltersOpen(true)}
                 datasetLabel={datasetLabel}
                 isUploading={isUploading}
@@ -298,43 +301,25 @@ export function CockpitPage() {
                   </section>
                 )}
                 {/* Cluster header — full-width compact strip */}
-                <section className="flex flex-col gap-4 rounded-[24px] border border-slate-900/10 bg-white/55 px-5 py-4 shadow-sm sm:flex-row sm:items-center dark:border-white/10 dark:bg-white/5">
+                <section className="flex flex-col gap-4 rounded-[24px] border border-white/20 bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 shadow-[0_0_20px_rgba(251,146,60,0.35)] sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                      Active Cluster
-                    </div>
-                    <div className="mt-1 text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
+                    <div className="text-[24px] font-extrabold tracking-tight text-white sm:text-[30px]">
                       {currentCluster.title}
                     </div>
-                    <div className="mt-1.5 text-[13px] font-normal leading-relaxed text-slate-600 dark:text-slate-300">
+                    <div className="mt-2 text-[16px] font-medium leading-relaxed text-white/95 sm:text-[18px]">
                       {currentCluster.description}
                     </div>
                   </div>
                   <div className="flex items-center gap-4 sm:shrink-0">
                     <HealthScoreRing score={healthScore} />
-                    <div className="text-[11px] font-normal leading-relaxed text-slate-500 dark:text-slate-400">
+                    <div className="text-[13px] font-medium leading-relaxed text-white/90">
                       Aggregated from RAG<br />status across all KPIs
                     </div>
                   </div>
                 </section>
 
-                {/* Insights + AI Brief — side by side */}
-                <div className="grid items-start gap-4 xl:grid-cols-2">
-                  <KeyInsightsPanel
-                    insights={keyInsights}
-                    onSelect={(metricId) => {
-                      const metric = metricById.get(metricId)
-                      if (metric) {
-                        const parts = metricId.split('.')
-                        const clusterId = parts.length >= 3 ? (parts[1] as ClusterId) : activeCluster
-                        setActiveCluster(clusterId)
-                        setExpanded((s) => ({ ...s, [metricId]: true }))
-                        setPendingScrollMetricId(metricId)
-                      }
-                      setInsightMetricId(metricId)
-                      setInsightOpen(true)
-                    }}
-                  />
+                {/* AI Brief */}
+                <div className="grid items-start gap-4">
                   <ClusterBrief
                     activeCluster={activeCluster}
                     metricSnapshot={metricSnapshot}

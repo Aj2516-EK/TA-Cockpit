@@ -74,10 +74,22 @@ export async function parseUploadToDataset(file: File): Promise<Dataset> {
 
   if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
     const buf = await file.arrayBuffer()
-    const wb = XLSX.read(buf, { type: 'array', cellDates: true })
+    const wb = XLSX.read(buf, { type: 'array', cellDates: true, dense: true })
 
     const tables: RawTables = {}
-    for (const sheetName of wb.SheetNames) {
+    const expectedSheets = new Set([
+      '1_Requisition',
+      '2_Candidate',
+      '3_Application_Pipeline',
+      '4_Recruiter_Activity',
+      '5_Interview_Offer',
+      '6_Hiring_Cost',
+      '7_Job_Posting_Analytics',
+    ])
+    const sheetNamesToParse = wb.SheetNames.filter((name) => expectedSheets.has(name))
+    const finalSheetNames = sheetNamesToParse.length > 0 ? sheetNamesToParse : wb.SheetNames
+
+    for (const sheetName of finalSheetNames) {
       const ws = wb.Sheets[sheetName]
       // raw=false helps ensure dates appear as strings when not cellDates, but we handle both.
       tables[sheetName] = XLSX.utils.sheet_to_json(ws, { defval: null, raw: false }) as RawTableRow[]
@@ -158,6 +170,12 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
   const interviewOffer = pickTable(tables, '5_Interview_Offer')
   const hiringCost = pickTable(tables, '6_Hiring_Cost')
   const jobPosting = pickTable(tables, '7_Job_Posting_Analytics')
+
+  if (pipeline.length > 200000) {
+    throw new Error(
+      `The uploaded workbook has ${pipeline.length.toLocaleString()} pipeline rows. Please split the file and retry to avoid browser memory issues.`,
+    )
+  }
 
   const sheetStats = Object.entries(tables).map(([name, rows]) => {
     const cols = new Set<string>()
