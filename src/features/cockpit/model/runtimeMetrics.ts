@@ -55,8 +55,8 @@ function fmtMins(mins: number, digits = 1) {
 }
 
 function fmtCurrency(n: number) {
-  // Dataset doesn't include currency; assume USD for display.
-  return n.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+  // Dataset doesn't include currency; assume AED for display (Dubai locale).
+  return n.toLocaleString('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 })
 }
 
 function ragForLowerIsBetter(value: number, greenMax: number, amberMax: number): Rag {
@@ -437,7 +437,7 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
         return {
           valueText: 'N/A',
           valueNum: undefined,
-          thresholdText: '< $2,500',
+          thresholdText: '< AED 14,700',
           rag: 'amber',
           supportingFacts: ['No hiring cost data in the current filter slice.'],
         }
@@ -455,7 +455,7 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
         return {
           valueText: 'N/A',
           valueNum: undefined,
-          thresholdText: '< $2,500',
+          thresholdText: '< AED 14,700',
           rag: 'amber',
           supportingFacts: [
             `Total hiring cost (reqs with cost): ${seenReq.size}`,
@@ -465,11 +465,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       }
 
       const cph = totalCost / hireCount
-      const rag = ragForLowerIsBetter(cph, 4000, 4500)
+      const rag = ragForLowerIsBetter(cph, 14700, 16500)
       return {
         valueNum: cph,
         valueText: fmtCurrency(cph),
-        thresholdText: '< $4,000',
+        thresholdText: '< AED 14,700',
         rag,
         supportingFacts: [
           `Hires: ${fmtNumber(hireCount, 0)}`,

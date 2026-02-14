@@ -85,7 +85,14 @@ export async function parseUploadToDataset(file: File): Promise<Dataset> {
 
     const { rows: factRows, diagnostics } = normalizeFactRowsFromCockpitWorkbook(tables)
     const columns = Object.keys(factRows[0] ?? {})
-    return { name, loadedAt, rows: factRows, columns, diagnostics }
+    return {
+      name,
+      loadedAt,
+      rows: factRows,
+      columns,
+      diagnostics,
+      recruiterActivityRows: tables['4_Recruiter_Activity'] ?? [],
+    }
   }
 
   throw new Error('Unsupported file type. Please upload .xlsx or .csv.')

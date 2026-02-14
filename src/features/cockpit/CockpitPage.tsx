@@ -134,8 +134,9 @@ export function CockpitPage() {
       computeInsightContext({
         rows: filteredRows,
         currentMetrics,
+        recruiterActivityRows: dataset?.recruiterActivityRows,
       }),
-    [filteredRows, currentMetrics],
+    [filteredRows, currentMetrics, dataset?.recruiterActivityRows],
   )
 
   const metricsForNarratives = useMemo(

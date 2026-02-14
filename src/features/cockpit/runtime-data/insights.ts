@@ -1,6 +1,6 @@
 import type { Metric } from '../model'
 import { computeStageDistribution, computeWeeklyTrend, type WeeklyTrendPoint } from './charts'
-import type { ApplicationFactRow } from './types'
+import type { ApplicationFactRow, RawTableRow } from './types'
 
 export type InsightMetricSnapshot = {
   id: string
@@ -25,6 +25,23 @@ export type InsightContext = {
   redMetrics: InsightMetricSnapshot[]
   amberMetrics: InsightMetricSnapshot[]
   topFunnelStages: Array<{ stage: string; applications: number }>
+  stageDistribution: Array<{ stage: string; applications: number }>
+  stageDistributionTotalApplications: number
+  stageDistributionNote: string
+  applicationTypeByQuarter: Array<{
+    quarter: string
+    total: number
+    internal: number
+    external: number
+    unknown: number
+  }>
+  applicationTypeByQuarterNote: string
+  interactionTypeByQuarter: Array<{
+    quarter: string
+    total: number
+    types: Array<{ type: string; count: number }>
+  }>
+  interactionTypeByQuarterNote: string
   weeklyTrend: {
     points: WeeklyTrendPoint[]
     applicationsWoWChangePct: number | null
@@ -58,6 +75,26 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10
 }
 
+function toTrimmedString(v: unknown): string | null {
+  if (v == null) return null
+  const s = String(v).trim()
+  return s.length ? s : null
+}
+
+function toDate(v: unknown): Date | null {
+  if (v == null || v === '') return null
+  if (v instanceof Date && Number.isFinite(v.getTime())) return new Date(v.getTime())
+  const s = toTrimmedString(v)
+  if (!s) return null
+  const d = new Date(s)
+  return Number.isFinite(d.getTime()) ? d : null
+}
+
+function quarterKey(d: Date): string {
+  const q = Math.floor(d.getMonth() / 3) + 1
+  return `${d.getFullYear()}-Q${q}`
+}
+
 function daysBetween(a: Date, b: Date): number {
   return (b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)
 }
@@ -75,9 +112,11 @@ function compactMetric(m: Metric): InsightMetricSnapshot {
 export function computeInsightContext({
   rows,
   currentMetrics,
+  recruiterActivityRows,
 }: {
   rows: ApplicationFactRow[] | null
   currentMetrics: Metric[]
+  recruiterActivityRows?: RawTableRow[]
 }): InsightContext | null {
   if (!rows) return null
 
@@ -90,6 +129,10 @@ export function computeInsightContext({
 
   const sourceApps = new Map<string, Set<string>>()
   const stageDurations = new Map<string, number[]>()
+  const appTypeByQuarter = new Map<
+    string,
+    { internal: Set<string>; external: Set<string>; unknown: Set<string> }
+  >()
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
@@ -117,6 +160,20 @@ export function computeInsightContext({
         values.push(delta)
         stageDurations.set(stage, values)
       }
+    }
+
+    if (row.applicationDate) {
+      const q = quarterKey(row.applicationDate)
+      const bucket =
+        appTypeByQuarter.get(q) ?? {
+          internal: new Set<string>(),
+          external: new Set<string>(),
+          unknown: new Set<string>(),
+        }
+      if (!appTypeByQuarter.has(q)) appTypeByQuarter.set(q, bucket)
+      if (row.candidateType === 'Internal') bucket.internal.add(appKey)
+      else if (row.candidateType === 'External') bucket.external.add(appKey)
+      else bucket.unknown.add(appKey)
     }
   }
 
@@ -152,6 +209,49 @@ export function computeInsightContext({
   const redMetrics = currentMetrics.filter((m) => m.rag === 'red').map(compactMetric)
   const amberMetrics = currentMetrics.filter((m) => m.rag === 'amber').map(compactMetric)
 
+  const applicationTypeByQuarter = [...appTypeByQuarter.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([quarter, bucket]) => {
+      const internal = bucket.internal.size
+      const external = bucket.external.size
+      const unknown = bucket.unknown.size
+      return {
+        quarter,
+        internal,
+        external,
+        unknown,
+        total: internal + external + unknown,
+      }
+    })
+
+  const candidateIdsInScope = new Set(
+    rows.map((r) => r.candidateId).filter((v): v is string => typeof v === 'string' && v.length > 0),
+  )
+  const interactionByQuarter = new Map<string, Map<string, number>>()
+  if (recruiterActivityRows && recruiterActivityRows.length > 0) {
+    for (const r of recruiterActivityRows) {
+      const candidateId = toTrimmedString(r['Candidate_ID'])
+      if (candidateIdsInScope.size > 0 && (!candidateId || !candidateIdsInScope.has(candidateId))) continue
+      const date = toDate(r['Interaction_Date'])
+      if (!date) continue
+      const type = toTrimmedString(r['Interaction_Type']) ?? 'Unknown'
+      const q = quarterKey(date)
+      const byType = interactionByQuarter.get(q) ?? new Map<string, number>()
+      if (!interactionByQuarter.has(q)) interactionByQuarter.set(q, byType)
+      byType.set(type, (byType.get(type) ?? 0) + 1)
+    }
+  }
+
+  const interactionTypeByQuarter = [...interactionByQuarter.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([quarter, byType]) => {
+      const types = [...byType.entries()]
+        .map(([type, count]) => ({ type, count }))
+        .sort((a, b) => b.count - a.count)
+      const total = types.reduce((sum, t) => sum + t.count, 0)
+      return { quarter, total, types }
+    })
+
   return {
     summary: {
       totalRows: rows.length,
@@ -166,7 +266,17 @@ export function computeInsightContext({
     },
     redMetrics,
     amberMetrics,
-    topFunnelStages: stageDist.points.slice(0, 6),
+    topFunnelStages: stageDist.points,
+    stageDistribution: stageDist.points,
+    stageDistributionTotalApplications: stageDist.totalApplications,
+    stageDistributionNote:
+      'Current stage distribution across applications. This is not a stage-to-stage conversion funnel; do not infer conversion rates without stage history.',
+    applicationTypeByQuarter,
+    applicationTypeByQuarterNote:
+      'Counts unique applications by quarter of Application_Date. Candidate type sourced from Candidate Type (Internal/External).',
+    interactionTypeByQuarter,
+    interactionTypeByQuarterNote:
+      'Counts recruiter interactions by quarter of Interaction_Date, limited to candidates in the current filter scope.',
     weeklyTrend: {
       points: weeklyPoints,
       applicationsWoWChangePct: last && prev ? pctChange(last.applications, prev.applications) : null,

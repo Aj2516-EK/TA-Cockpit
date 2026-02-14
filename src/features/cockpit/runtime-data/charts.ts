@@ -34,11 +34,19 @@ function stageSortKey(stage: string): number {
     'applied',
     'screen',
     'shortlist',
+    'assessment',
     'interview',
+    'background',
     'offer',
     'hired',
     'rejected',
   ]
+  if (s.includes('reject')) {
+    if (s.includes('screen')) return 2.9
+    if (s.includes('assessment')) return 4.9
+    if (s.includes('interview')) return 5.9
+    return 9.9
+  }
   for (let i = 0; i < order.length; i++) {
     if (s.includes(order[i])) return i
   }
@@ -117,4 +125,3 @@ export function computeWeeklyTrend(rows: ApplicationFactRow[]) {
 
   return { points, missingDates }
 }
-

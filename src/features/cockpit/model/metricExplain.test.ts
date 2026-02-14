@@ -31,10 +31,10 @@ describe('parseThreshold', () => {
     expect(t.value).toBe(7.0)
   })
 
-  it('parses "< $2,500" correctly', () => {
-    const t = parseThreshold('< $2,500')
+  it('parses "< AED 14,700" correctly', () => {
+    const t = parseThreshold('< AED 14,700')
     expect(t.comparator).toBe('<')
-    expect(t.value).toBe(2500)
+    expect(t.value).toBe(14700)
   })
 
   it('parses "> 5.0" correctly', () => {

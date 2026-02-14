@@ -5,11 +5,30 @@ import type { Metric } from '../model'
 import type { ApplicationFactRow, Dataset, Filters } from '../runtime-data/types'
 import type { ReactNode } from 'react'
 
+const AED_FORMATTER = new Intl.NumberFormat('en-AE', {
+  style: 'currency',
+  currency: 'AED',
+  maximumFractionDigits: 0,
+})
+
+function fmtAed(value: number | null): string | null {
+  if (value == null || !Number.isFinite(value)) return null
+  return AED_FORMATTER.format(value)
+}
+
 function toIso(v: unknown): string | number | boolean | null {
   if (v == null) return null
   if (v instanceof Date) return Number.isFinite(v.getTime()) ? v.toISOString() : null
   if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') return v
   return String(v)
+}
+
+function formatRowForPreview(row: ApplicationFactRow): Record<string, unknown> {
+  return {
+    ...row,
+    budgetedCost: fmtAed(row.budgetedCost),
+    totalHiringCost: fmtAed(row.totalHiringCost),
+  }
 }
 
 function downloadText(filename: string, text: string, mime = 'text/plain') {
@@ -96,6 +115,7 @@ export function DataInspectorDrawer({
   const totalCount = dataset?.rows.length ?? 0
 
   const naMetrics = allMetrics.filter((m) => m.valueText === 'N/A' || typeof m.valueNum !== 'number')
+  const previewRows = (filteredRows ?? dataset?.rows ?? []).slice(0, 25).map(formatRowForPreview)
 
   return (
     <>
@@ -336,7 +356,7 @@ export function DataInspectorDrawer({
                   <div className="rounded-[16px] border border-slate-900/10 bg-white/60 p-3 dark:border-white/10 dark:bg-white/5">
                     <div className="mb-2 text-[12px] font-semibold text-slate-700 dark:text-slate-200">Filtered rows</div>
                     <pre className="max-h-[260px] overflow-auto rounded-xl bg-black/5 p-3 text-[11px] text-slate-800 dark:bg-white/5 dark:text-slate-200">
-{JSON.stringify((filteredRows ?? dataset.rows).slice(0, 25), null, 2)}
+{JSON.stringify(previewRows, null, 2)}
                     </pre>
                   </div>
                 </Section>

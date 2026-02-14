@@ -35,7 +35,7 @@ export function getVizInterpretation(metric: Metric): string {
     case 'cost': {
       const bar = `The horizontal bar shows the current cost (${metric.valueText}).`
       const target = threshold.value
-        ? ` The vertical line marks the ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(threshold.value)} target.`
+        ? ` The vertical line marks the ${new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(threshold.value)} target.`
         : ''
       const direction = ' Lower costs indicate better efficiency.'
       return bar + target + direction

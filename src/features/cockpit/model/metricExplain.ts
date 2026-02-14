@@ -8,7 +8,7 @@ export type ParsedThreshold = {
 
 export function parseThreshold(thresholdText: string): ParsedThreshold {
   const raw = thresholdText ?? ''
-  const m = raw.match(/([<>])\s*\$?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/)
+  const m = raw.match(/([<>])\s*(?:[A-Z]{3}\s*)?\$?\s*([0-9][0-9,]*(?:\.[0-9]+)?)/i)
   if (!m) return { comparator: null, value: null, raw }
   const comparator = (m[1] as '<' | '>') ?? null
   const value = Number(String(m[2]).replace(/,/g, ''))

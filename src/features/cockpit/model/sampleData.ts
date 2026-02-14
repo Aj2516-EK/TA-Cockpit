@@ -322,9 +322,9 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
       {
         idSuffix: 'cost_per_acquisition',
         title: 'Cost per Acquisition',
-        valueText: '$3,140',
-        valueNum: 3140,
-        thresholdText: '< $4,000',
+        valueText: 'AED 11,524',
+        valueNum: 11524,
+        thresholdText: '< AED 14,700',
         rag: 'amber',
         icon: 'account_balance_wallet',
         alarm: 'CPA is above budget; savings required this month.',

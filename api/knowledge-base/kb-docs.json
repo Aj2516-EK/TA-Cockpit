@@ -137,7 +137,7 @@
     "title": "Cost per Acquisition",
     "cluster": "economics",
     "tags": ["economics", "cost", "efficiency"],
-    "text": "Definition: total hiring cost across requisitions divided by total hires in scope. Inputs: Total_Hiring_Cost from 6_Hiring_Cost and Status=Hired from pipeline (unique Application_ID where available). If hires are zero, show N/A and note missing hires. Threshold reference: green < 2500, amber 2500 to 3200, red > 3200."
+    "text": "Definition: total hiring cost across requisitions divided by total hires in scope. Inputs: Total_Hiring_Cost from 6_Hiring_Cost and Status=Hired from pipeline (unique Application_ID where available). If hires are zero, show N/A and note missing hires. Threshold reference: green < 14,700 AED, amber 14,700 to 16,500, red > 16,500."
   },
   {
     "id": "metric.economics.presented_vs_offers",

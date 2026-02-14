@@ -94,9 +94,12 @@ export default async function handler(req: Request): Promise<Response> {
       abortSignal: abortCtrl.signal,
       prompt:
         'You are a senior TA analytics advisor.\n' +
+        'You are assisting users in Dubai, UAE. Use AED for all currency references.\n' +
         'Return concise, executive-ready insights grounded only in provided data.\n' +
         'Rules:\n' +
         '- Use only numbers found in metricSnapshot or insightContext.\n' +
+        '- Stage distributions are current-stage counts only; do not infer conversion rates without stage history.\n' +
+        '- If needed, application type or recruiter interaction quarter views are in insightContext.applicationTypeByQuarter and insightContext.interactionTypeByQuarter.\n' +
         '- Prioritize red metrics first, then amber.\n' +
         '- Mention concrete business implications and keep language specific.\n' +
         '- If a value is missing, say it is unavailable.\n' +

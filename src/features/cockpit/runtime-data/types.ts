@@ -8,6 +8,7 @@ export type Dataset = {
   rows: ApplicationFactRow[]
   columns: string[]
   diagnostics?: DatasetDiagnostics
+  recruiterActivityRows?: RawTableRow[]
 }
 
 export type DatasetDiagnostics = {

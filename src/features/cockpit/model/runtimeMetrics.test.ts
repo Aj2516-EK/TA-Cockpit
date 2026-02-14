@@ -189,14 +189,14 @@ describe('computeMetric', () => {
   describe('cost_per_acquisition (economics)', () => {
     it('computes total cost / number of hires', () => {
       const rows = [
-        row({ requisitionId: 'R1', totalHiringCost: 5000, status: 'Hired', applicationId: 'A1' }),
-        row({ requisitionId: 'R2', totalHiringCost: 3000, status: 'Hired', applicationId: 'A2' }),
-        row({ requisitionId: 'R3', totalHiringCost: 2000, status: 'Active', applicationId: 'A3' }),
+        row({ requisitionId: 'R1', totalHiringCost: 18350, status: 'Hired', applicationId: 'A1' }),
+        row({ requisitionId: 'R2', totalHiringCost: 11010, status: 'Hired', applicationId: 'A2' }),
+        row({ requisitionId: 'R3', totalHiringCost: 7340, status: 'Active', applicationId: 'A3' }),
       ]
       const result = computeMetric('metric.economics.cost_per_acquisition', rows)!
-      // totalCost = 5000+3000+2000 = 10000, hires = 2 → 5000
-      expect(result.valueNum).toBe(5000)
-      expect(result.rag).toBe('red') // 5000 > amberMax 4500
+      // totalCost = 18350+11010+7340 = 36700, hires = 2 → 18350
+      expect(result.valueNum).toBe(18350)
+      expect(result.rag).toBe('red') // 18350 > amberMax 16500
     })
 
     it('returns N/A when no hires', () => {
