@@ -76,7 +76,7 @@ export function ChatWidget({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          'fixed bottom-5 right-5 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-2xl',
+          'fixed bottom-5 right-5 z-[60] inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-4',
           'bg-[color:var(--ta-primary)] text-white shadow-[0_18px_60px_rgba(33,150,243,0.35)]',
           'transition hover:brightness-110 active:scale-[0.98]',
         )}
@@ -84,6 +84,7 @@ export function ChatWidget({
         title="Ask AI"
       >
         <Icon name={open ? 'close' : 'auto_awesome'} className="text-[22px]" />
+        <span className="text-[12px] font-bold uppercase tracking-wider">Ask AI</span>
       </button>
 
       {/* Floating chat panel */}
@@ -103,7 +104,7 @@ export function ChatWidget({
             <Icon name="auto_awesome" className="text-[18px]" />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-bold text-slate-900 dark:text-white">AI Advisor</div>
+            <div className="text-[13px] font-bold text-slate-900 dark:text-white">Ask AI</div>
           </div>
           <button
             type="button"

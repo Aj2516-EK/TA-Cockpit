@@ -8,12 +8,14 @@ export function SidebarNav({
   onSelectCluster,
   collapsed,
   onToggleCollapsed,
+  onNavigateHome,
 }: {
   clusters: ClusterMeta[]
   activeCluster: ClusterId
   onSelectCluster: (id: ClusterId) => void
   collapsed: boolean
   onToggleCollapsed: () => void
+  onNavigateHome?: () => void
 }) {
   return (
     <aside
@@ -27,15 +29,33 @@ export function SidebarNav({
       <div className="flex h-full flex-col">
         <div className={cn('flex items-center gap-3 px-3 py-3', collapsed ? 'justify-center' : 'justify-between')}>
           <div className={cn('flex items-center gap-2', collapsed && 'hidden')}>
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20">
+            <button
+              type="button"
+              onClick={() => onNavigateHome?.()}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20 transition hover:bg-[color:var(--ta-primary)]/20"
+              aria-label="Go to home dashboard"
+              title="Home"
+            >
               <Icon name="flight_takeoff" className="text-[20px]" />
-            </span>
+            </button>
             <div className="leading-tight">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                 TA Cockpit
               </div>
             </div>
           </div>
+
+          {collapsed && (
+            <button
+              type="button"
+              onClick={() => onNavigateHome?.()}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20 transition hover:bg-[color:var(--ta-primary)]/20"
+              aria-label="Go to home dashboard"
+              title="Home"
+            >
+              <Icon name="flight_takeoff" className="text-[20px]" />
+            </button>
+          )}
 
           <button
             type="button"
