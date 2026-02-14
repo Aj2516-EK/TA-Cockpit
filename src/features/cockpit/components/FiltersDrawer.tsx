@@ -129,7 +129,7 @@ export function FiltersDrawer({
                   onToggle={(v) => toggleMulti('source', v)}
                 />
                 <MultiChips
-                  label="Diversity flag"
+                  label="Gender"
                   values={options.diversityFlag}
                   selected={filters.diversityFlag ?? []}
                   onToggle={(v) => toggleMulti('diversityFlag', v)}

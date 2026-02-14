@@ -21,6 +21,16 @@ function toYNBool(v: unknown): boolean | null {
   return null
 }
 
+function toGender(v: unknown): 'Female' | 'Male' | null {
+  const s = toTrimmedString(v)?.toUpperCase()
+  if (!s) return null
+  if (s === 'F' || s === 'FEMALE') return 'Female'
+  if (s === 'M' || s === 'MALE') return 'Male'
+  if (s === 'Y' || s === 'YES' || s === 'TRUE') return 'Female'
+  if (s === 'N' || s === 'NO' || s === 'FALSE') return 'Male'
+  return null
+}
+
 function toDate(v: unknown): Date | null {
   if (v == null || v === '') return null
   if (v instanceof Date && Number.isFinite(v.getTime())) return new Date(v.getTime())
@@ -122,7 +132,7 @@ function normalizeFactRowFromCsv(raw: RawTableRow): ApplicationFactRow | null {
 
     source: toTrimmedString(raw['Source']),
     candidateType: getCandidateType(raw['Candidate Type (Internal/External)'] ?? raw['CandidateType']),
-    diversityFlag: toYNBool(raw['Diversity_Flag']),
+    diversityFlag: toGender(raw['Diversity_Flag']),
     isCompetitor: toYNBool(raw['Is_Competitor (Y/N)']),
     applicationStartTime: toDate(raw['Application_Start_Time']),
     applicationSubmitTime: toDate(raw['Application_Submit_Time']),
@@ -328,7 +338,7 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
 
       source: toTrimmedString(cand?.['Source']),
       candidateType: getCandidateType(cand?.['Candidate Type (Internal/External)']),
-      diversityFlag: toYNBool(cand?.['Diversity_Flag']),
+      diversityFlag: toGender(cand?.['Diversity_Flag']),
       isCompetitor: toYNBool(cand?.['Is_Competitor (Y/N)']),
       applicationStartTime: toDate(cand?.['Application_Start_Time']),
       applicationSubmitTime: toDate(cand?.['Application_Submit_Time']),

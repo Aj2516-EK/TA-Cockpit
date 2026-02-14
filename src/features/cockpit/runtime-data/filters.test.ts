@@ -64,14 +64,14 @@ describe('deriveFilterOptions', () => {
     expect(opts.businessUnit).toEqual(['Engineering', 'Sales'])
   })
 
-  it('extracts Y/N for diversity flag', () => {
+  it('extracts Male/Female for diversity flag', () => {
     const rows = [
-      row({ diversityFlag: true }),
-      row({ diversityFlag: false }),
+      row({ diversityFlag: 'Female' }),
+      row({ diversityFlag: 'Male' }),
       row({ diversityFlag: null }),
     ]
     const opts = deriveFilterOptions(rows)
-    expect(opts.diversityFlag).toEqual(['N', 'Y']) // sorted
+    expect(opts.diversityFlag).toEqual(['Female', 'Male']) // sorted
   })
 
   it('extracts Internal/External for candidateType', () => {
@@ -97,9 +97,9 @@ describe('deriveFilterOptions', () => {
 
 describe('applyFilters', () => {
   const baseRows = [
-    row({ applicationDate: new Date('2025-03-01'), businessUnit: 'Engineering', location: 'NYC', status: 'Active', candidateType: 'Internal', diversityFlag: true, criticalSkillFlag: true }),
-    row({ applicationDate: new Date('2025-03-15'), businessUnit: 'Sales', location: 'LA', status: 'Hired', candidateType: 'External', diversityFlag: false, criticalSkillFlag: false }),
-    row({ applicationDate: new Date('2025-04-01'), businessUnit: 'Engineering', location: 'NYC', status: 'Rejected', candidateType: 'External', diversityFlag: true, criticalSkillFlag: true }),
+    row({ applicationDate: new Date('2025-03-01'), businessUnit: 'Engineering', location: 'NYC', status: 'Active', candidateType: 'Internal', diversityFlag: 'Female', criticalSkillFlag: true }),
+    row({ applicationDate: new Date('2025-03-15'), businessUnit: 'Sales', location: 'LA', status: 'Hired', candidateType: 'External', diversityFlag: 'Male', criticalSkillFlag: false }),
+    row({ applicationDate: new Date('2025-04-01'), businessUnit: 'Engineering', location: 'NYC', status: 'Rejected', candidateType: 'External', diversityFlag: 'Female', criticalSkillFlag: true }),
   ]
 
   it('returns all rows with empty filters', () => {
@@ -147,10 +147,10 @@ describe('applyFilters', () => {
     expect(filtered).toHaveLength(2)
   })
 
-  it('filters by diversityFlag Y/N', () => {
-    const filtered = applyFilters(baseRows, { diversityFlag: ['Y'] })
+  it('filters by diversityFlag Male/Female', () => {
+    const filtered = applyFilters(baseRows, { diversityFlag: ['Female'] })
     expect(filtered).toHaveLength(2)
-    expect(filtered.every((r) => r.diversityFlag === true)).toBe(true)
+    expect(filtered.every((r) => r.diversityFlag === 'Female')).toBe(true)
   })
 
   it('filters by criticalSkillFlag', () => {

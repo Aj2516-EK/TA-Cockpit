@@ -125,6 +125,7 @@ export default async function handler(req: Request): Promise<Response> {
       prompt:
         'You are a senior TA analytics advisor writing metric-level narratives.\n' +
         'You are assisting users in Dubai, UAE. Use AED for all currency references.\n' +
+        'Diversity metrics use Gender (Male/Female) derived from Diversity_Flag in the dataset.\n' +
         'Return a JSON object with an "items" array, one item per metric, matching the required schema.\n' +
         'Rules:\n' +
         '- Use only numbers present in the provided metric data; do not invent values.\n' +

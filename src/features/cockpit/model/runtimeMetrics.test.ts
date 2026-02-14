@@ -172,13 +172,13 @@ describe('computeMetric', () => {
   })
 
   describe('diverse_attraction (diversity)', () => {
-    it('computes % of diverse candidates', () => {
+    it('computes % of female candidates', () => {
       const rows = [
-        row({ candidateId: 'C1', diversityFlag: true }),
-        row({ candidateId: 'C2', diversityFlag: true }),
-        row({ candidateId: 'C3', diversityFlag: false }),
-        row({ candidateId: 'C4', diversityFlag: false }),
-        row({ candidateId: 'C5', diversityFlag: false }),
+        row({ candidateId: 'C1', diversityFlag: 'Female' }),
+        row({ candidateId: 'C2', diversityFlag: 'Female' }),
+        row({ candidateId: 'C3', diversityFlag: 'Male' }),
+        row({ candidateId: 'C4', diversityFlag: 'Male' }),
+        row({ candidateId: 'C5', diversityFlag: 'Male' }),
       ]
       const result = computeMetric('metric.diversity.diverse_attraction', rows)!
       expect(result.valueNum).toBe(40)

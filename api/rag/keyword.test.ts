@@ -17,7 +17,7 @@ describe('keywordRetrieveDocs', () => {
   const docs: KnowledgeBaseDoc[] = [
     doc({ id: 'readiness-1', title: 'Skill Readiness', cluster: 'readiness', text: 'Measures skill match across pipeline', tags: ['skill', 'readiness'] }),
     doc({ id: 'momentum-1', title: 'Time to Next Step', cluster: 'momentum', text: 'Stage duration metrics', tags: ['time', 'momentum'] }),
-    doc({ id: 'diversity-1', title: 'Diverse Attraction', cluster: 'diversity', text: 'Diversity flag percentage', tags: ['diversity'] }),
+    doc({ id: 'diversity-1', title: 'Female Attraction', cluster: 'diversity', text: 'Gender percentage', tags: ['diversity'] }),
     doc({ id: 'economics-1', title: 'Cost Per Hire', cluster: 'economics', text: 'Total hiring cost divided by hires', tags: ['cost', 'economics'] }),
   ]
 

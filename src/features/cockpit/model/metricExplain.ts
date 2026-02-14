@@ -135,14 +135,14 @@ export function meaningForMetric(metricId: string): { meaning: string; formula: 
     case 'metric.diversity.diverse_attraction':
       return {
         meaning:
-          'How diverse the top-of-funnel is. If attraction is low, downstream diversity outcomes will not recover without intervention.',
-        formula: '% of candidates with Diversity_Flag = Y (unique candidates).',
+          'Gender mix at the top of funnel. If female attraction is low, downstream gender balance will not recover without intervention.',
+        formula: '% of candidates with Gender = Female (unique candidates).',
       }
     case 'metric.diversity.diverse_pipeline':
       return {
         meaning:
-          'Diversity parity at the outcome stage. If this is lower than attraction, you likely have conversion bias or process friction.',
-        formula: 'Proxy: % of hires who are diverse (Status = Hired, unique candidates).',
+          'Gender parity at the outcome stage. If this is lower than attraction, you likely have conversion bias or process friction.',
+        formula: 'Proxy: % of hires who are Female (Status = Hired, unique candidates).',
       }
     case 'metric.diversity.active_applicants':
       return {

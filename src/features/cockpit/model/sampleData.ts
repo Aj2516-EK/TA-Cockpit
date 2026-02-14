@@ -272,7 +272,7 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
     mk(
       {
         idSuffix: 'diverse_attraction',
-        title: 'Diverse Candidates Attraction',
+        title: 'Female Candidates Attraction',
         valueText: '38.4%',
         valueNum: 38.4,
         unit: '%',
@@ -288,7 +288,7 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
     mk(
       {
         idSuffix: 'diverse_pipeline',
-        title: 'Diverse Talent Pipeline',
+        title: 'Female Talent Pipeline',
         valueText: '29.7%',
         valueNum: 29.7,
         unit: '%',
@@ -296,7 +296,7 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
         rag: 'red',
         icon: 'timeline',
         alarm: 'Pipeline parity is weak; late-stage conversion is leaking.',
-        insight: 'Diverse candidates progress more slowly beyond interview; feedback and scheduling delays amplify loss.',
+        insight: 'Female candidates progress more slowly beyond interview; feedback and scheduling delays amplify loss.',
         action: 'Standardize interview panels and run weekly parity reviews by stage.',
       },
       'diversity',

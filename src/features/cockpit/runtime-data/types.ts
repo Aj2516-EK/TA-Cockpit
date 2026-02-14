@@ -59,7 +59,7 @@ export type Filters = {
 
   source?: string[]
   candidateType?: string[]
-  diversityFlag?: string[]
+  diversityFlag?: Array<'Female' | 'Male'>
 
   currentStage?: string[]
   status?: string[]
@@ -73,7 +73,7 @@ export type FilterOptions = {
   criticalSkillFlag: Array<'Y' | 'N'>
   source: string[]
   candidateType: Array<'Internal' | 'External'>
-  diversityFlag: Array<'Y' | 'N'>
+  diversityFlag: Array<'Female' | 'Male'>
   currentStage: string[]
   status: Array<'Active' | 'Rejected' | 'Hired'>
   recruiterId: string[]
@@ -97,7 +97,7 @@ export type ApplicationFactRow = {
   // Candidate
   source: string | null
   candidateType: 'Internal' | 'External' | null
-  diversityFlag: boolean | null
+  diversityFlag: 'Female' | 'Male' | null
   isCompetitor: boolean | null
   applicationStartTime: Date | null
   applicationSubmitTime: Date | null

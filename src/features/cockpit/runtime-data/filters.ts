@@ -19,6 +19,14 @@ function asYNUnique(values: Array<boolean | null | undefined>): Array<'Y' | 'N'>
   return [...s].sort()
 }
 
+function asGenderUnique(values: Array<'Female' | 'Male' | null | undefined>): Array<'Female' | 'Male'> {
+  const s = new Set<'Female' | 'Male'>()
+  for (const v of values) {
+    if (v === 'Female' || v === 'Male') s.add(v)
+  }
+  return [...s].sort((a, b) => a.localeCompare(b))
+}
+
 function asTypeUnique(values: Array<string | null | undefined>): Array<'Internal' | 'External'> {
   const s = new Set<'Internal' | 'External'>()
   for (const v of values) {
@@ -67,7 +75,7 @@ export function deriveFilterOptions(rows: ApplicationFactRow[] | null): FilterOp
     criticalSkillFlag: asYNUnique(rows.map((r) => r.criticalSkillFlag)),
     source: uniqSorted(rows.map((r) => r.source)),
     candidateType: asTypeUnique(rows.map((r) => r.candidateType)),
-    diversityFlag: asYNUnique(rows.map((r) => r.diversityFlag)),
+    diversityFlag: asGenderUnique(rows.map((r) => r.diversityFlag)),
     currentStage: uniqSorted(rows.map((r) => r.currentStage)),
     status: uniqSorted(rows.map((r) => r.status)).filter(
       (s): s is 'Active' | 'Rejected' | 'Hired' => s === 'Active' || s === 'Rejected' || s === 'Hired',
@@ -104,9 +112,8 @@ export function applyFilters(rows: ApplicationFactRow[], filters: Filters): Appl
       if (!filters.candidateType.includes(r.candidateType)) return false
     }
     if (filters.diversityFlag && filters.diversityFlag.length) {
-      const v = r.diversityFlag == null ? null : r.diversityFlag ? 'Y' : 'N'
-      if (!v) return false
-      if (!filters.diversityFlag.includes(v)) return false
+      if (!r.diversityFlag) return false
+      if (!filters.diversityFlag.includes(r.diversityFlag)) return false
     }
 
     if (!includesOrAll(filters.currentStage, r.currentStage)) return false
@@ -123,4 +130,3 @@ export function applyFilters(rows: ApplicationFactRow[], filters: Filters): Appl
 export function resetFilters(): Filters {
   return {}
 }
-

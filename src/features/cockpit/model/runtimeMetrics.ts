@@ -374,34 +374,44 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
     // --- Diversity ---
     case 'metric.diversity.diverse_attraction': {
       const uniq = uniqBy(rows, (r) => r.candidateId)
-      const withFlag = uniq.filter((r) => typeof r.diversityFlag === 'boolean')
-      if (withFlag.length === 0) return null
-      const diverse = withFlag.filter((r) => r.diversityFlag === true).length
-      const pct = (diverse / withFlag.length) * 100
+      const withGender = uniq.filter((r) => r.diversityFlag === 'Female' || r.diversityFlag === 'Male')
+      if (withGender.length === 0) return null
+      const female = withGender.filter((r) => r.diversityFlag === 'Female').length
+      const male = withGender.filter((r) => r.diversityFlag === 'Male').length
+      const pct = (female / withGender.length) * 100
       const rag = ragForHigherIsBetter(pct, 40, 35)
       return {
         valueNum: pct,
         valueText: fmtPct(pct, 1),
         thresholdText: '> 40%',
         rag,
-        supportingFacts: [`Candidates with diversity flag: ${withFlag.length}`],
+        supportingFacts: [
+          `Candidates with gender: ${withGender.length}`,
+          `Female: ${female}`,
+          `Male: ${male}`,
+        ],
       }
     }
     case 'metric.diversity.diverse_pipeline': {
-      // Proxy: % of hires that are diverse (pipeline parity, late-stage outcome).
+      // Proxy: % of hires that are female (pipeline parity, late-stage outcome).
       const hired = rows.filter((r) => r.status === 'Hired')
       const uniqHired = uniqBy(hired, (r) => r.candidateId)
-      const withFlag = uniqHired.filter((r) => typeof r.diversityFlag === 'boolean')
-      if (withFlag.length === 0) return null
-      const diverse = withFlag.filter((r) => r.diversityFlag === true).length
-      const pct = (diverse / withFlag.length) * 100
+      const withGender = uniqHired.filter((r) => r.diversityFlag === 'Female' || r.diversityFlag === 'Male')
+      if (withGender.length === 0) return null
+      const female = withGender.filter((r) => r.diversityFlag === 'Female').length
+      const male = withGender.filter((r) => r.diversityFlag === 'Male').length
+      const pct = (female / withGender.length) * 100
       const rag = ragForHigherIsBetter(pct, 40, 32)
       return {
         valueNum: pct,
         valueText: fmtPct(pct, 1),
         thresholdText: '> 40%',
         rag,
-        supportingFacts: [`Hires with diversity flag: ${withFlag.length}`],
+        supportingFacts: [
+          `Hires with gender: ${withGender.length}`,
+          `Female hires: ${female}`,
+          `Male hires: ${male}`,
+        ],
       }
     }
     case 'metric.diversity.active_applicants': {
