@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { deriveFilterOptions, applyFilters, resetFilters } from './filters'
-import type { ApplicationFactRow, Filters } from './types'
+import type { ApplicationFactRow } from './types'
 
 function row(overrides: Partial<ApplicationFactRow> = {}): ApplicationFactRow {
   return {
