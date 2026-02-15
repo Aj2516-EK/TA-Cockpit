@@ -7,6 +7,7 @@ import {
 import type { ClusterId, Metric } from '../model'
 import type { CockpitUIMessage } from './tools'
 import type { InsightContext } from '../runtime-data/insights'
+import type { TrendPoint } from '../runtime-data/trends'
 import type { Filters } from '../runtime-data/types'
 
 type ChatContextSnapshot = {
@@ -19,6 +20,7 @@ type ChatContextSnapshot = {
   }
   insightContext: InsightContext | null
   filters: Filters
+  metricTrends: Record<string, TrendPoint[]> | null
 }
 
 const chatContextStore = new Map<string, ChatContextSnapshot>()
@@ -28,6 +30,7 @@ export function useCockpitChat({
   metricSnapshot,
   insightContext,
   filters,
+  metricTrends,
   onOpenFilters,
   onExpandMetric,
 }: {
@@ -38,6 +41,7 @@ export function useCockpitChat({
   }
   insightContext: InsightContext | null
   filters: Filters
+  metricTrends: Record<string, TrendPoint[]> | null
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
 }) {
@@ -49,8 +53,9 @@ export function useCockpitChat({
       metricSnapshot,
       insightContext,
       filters,
+      metricTrends,
     })
-  }, [activeCluster, contextStoreKey, filters, insightContext, metricSnapshot])
+  }, [activeCluster, contextStoreKey, filters, insightContext, metricSnapshot, metricTrends])
 
   useEffect(() => {
     return () => {

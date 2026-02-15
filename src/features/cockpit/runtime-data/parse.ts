@@ -154,6 +154,18 @@ function normalizeFactRowFromCsv(raw: RawTableRow): ApplicationFactRow | null {
     candidateNps: toNumber(raw['Candidate_NPS']),
     skillMatchPercentage: toNumber(raw['Skill_Match_Percentage']),
 
+    primarySkills: toTrimmedString(raw['Primary_Skills'] ?? raw['primary_skills']),
+    skillsetCategory: toTrimmedString(raw['Skillset_Category'] ?? raw['skillset_category']),
+    secondarySkills: toTrimmedString(raw['Secondary_Skills'] ?? raw['secondary_skills']),
+    skillProficiencyLevel: toTrimmedString(raw['Skill_Proficiency_Level'] ?? raw['skill_proficiency_level']),
+    transferrableSkillset: toTrimmedString(raw['Transferrable skillset'] ?? raw['transferrable_skillset']),
+    transferableSkillMatchPct: toNumber(raw['Transferable_Skill_Match_%'] ?? raw['transferable_skill_match_pct']),
+    futureReadinessScore: toNumber(raw['Future_Readiness_Score'] ?? raw['future_readiness_score']),
+    availabilityWindow: toTrimmedString(raw['Availability_Window'] ?? raw['availability_window']),
+    benchStrengthTag: toTrimmedString(raw['Bench_Strength_Tag'] ?? raw['bench_strength_tag']),
+    mobilityPreference: toTrimmedString(raw['Mobility_Preference'] ?? raw['mobility_preference']),
+    upskillingInterest: toYNBool(raw['Upskilling_Interest (Y/N)'] ?? raw['upskilling_interest']),
+
     roleName: toTrimmedString(raw['Role_Name']),
     businessUnit: toTrimmedString(raw['Business_Unit']),
     location: toTrimmedString(raw['Location']),
@@ -161,6 +173,8 @@ function normalizeFactRowFromCsv(raw: RawTableRow): ApplicationFactRow | null {
     requisitionOpenDate: toDate(raw['Open_Date']),
     requisitionCloseDate: toDate(raw['Close_Date']),
     budgetedCost: toNumber(raw['Budgeted_Cost']),
+    skillsRequired: toTrimmedString(raw['Skills_Required'] ?? raw['skills_required']),
+    hiringManagerId: toTrimmedString(raw['Hiring_Manager_ID'] ?? raw['hiring_manager_id']),
 
     recruiterId: toTrimmedString(raw['Recruiter_ID']),
     matchingHoursTotal: toNumber(raw['Time_Spent_Matching (hrs)']),
@@ -172,6 +186,10 @@ function normalizeFactRowFromCsv(raw: RawTableRow): ApplicationFactRow | null {
     offerAccepted: toYNBool(raw['Offer_Accepted (Y/N)']),
 
     totalHiringCost: toNumber(raw['Total_Hiring_Cost']),
+    advertisingCost: toNumber(raw['Advertising_Cost'] ?? raw['advertising_cost']),
+    agencyFee: toNumber(raw['Agency_Fee'] ?? raw['agency_fee']),
+    technologyCost: toNumber(raw['Technology_Cost'] ?? raw['technology_cost']),
+    recruiterCost: toNumber(raw['Recruiter_Cost'] ?? raw['recruiter_cost']),
     jobViews: toNumber(raw['Job_Views']),
     jobApplicationsReceived: toNumber(raw['Applications_Received']),
   }
@@ -360,6 +378,18 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
       candidateNps: toNumber(cand?.['Candidate_NPS']),
       skillMatchPercentage: toNumber(cand?.['Skill_Match_Percentage']),
 
+      primarySkills: toTrimmedString(cand?.['Primary_Skills']),
+      skillsetCategory: toTrimmedString(cand?.['Skillset_Category']),
+      secondarySkills: toTrimmedString(cand?.['Secondary_Skills']),
+      skillProficiencyLevel: toTrimmedString(cand?.['Skill_Proficiency_Level']),
+      transferrableSkillset: toTrimmedString(cand?.['Transferrable skillset']),
+      transferableSkillMatchPct: toNumber(cand?.['Transferable_Skill_Match_%']),
+      futureReadinessScore: toNumber(cand?.['Future_Readiness_Score']),
+      availabilityWindow: toTrimmedString(cand?.['Availability_Window']),
+      benchStrengthTag: toTrimmedString(cand?.['Bench_Strength_Tag']),
+      mobilityPreference: toTrimmedString(cand?.['Mobility_Preference']),
+      upskillingInterest: toYNBool(cand?.['Upskilling_Interest (Y/N)']),
+
       roleName: toTrimmedString(req?.['Role_Name']),
       businessUnit: toTrimmedString(req?.['Business_Unit']),
       location: toTrimmedString(req?.['Location']),
@@ -367,6 +397,8 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
       requisitionOpenDate: toDate(req?.['Open_Date']),
       requisitionCloseDate: toDate(req?.['Close_Date']),
       budgetedCost: toNumber(req?.['Budgeted_Cost']),
+      skillsRequired: toTrimmedString(req?.['Skills_Required']),
+      hiringManagerId: toTrimmedString(req?.['Hiring_Manager_ID']),
 
       recruiterId: recruiterAgg?.recruiterId ?? null,
       matchingHoursTotal: recruiterAgg ? recruiterAgg.matchingHoursTotal : null,
@@ -378,6 +410,10 @@ function normalizeFactRowsFromCockpitWorkbook(tables: RawTables): {
       offerAccepted: toYNBool(interview?.['Offer_Accepted (Y/N)']),
 
       totalHiringCost: toNumber(cost?.['Total_Hiring_Cost']),
+      advertisingCost: toNumber(cost?.['Advertising_Cost']),
+      agencyFee: toNumber(cost?.['Agency_Fee']),
+      technologyCost: toNumber(cost?.['Technology_Cost']),
+      recruiterCost: toNumber(cost?.['Recruiter_Cost']),
 
       jobViews: toNumber(posting?.['Job_Views']),
       jobApplicationsReceived: toNumber(posting?.['Applications_Received']),

@@ -13,6 +13,7 @@ import type { Dataset, Filters } from './runtime-data/types'
 import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/filters'
 import { computeInsightContext } from './runtime-data/insights'
 import { computeAllMetricTrends } from './runtime-data/trends'
+import { loadAssignments, saveAssignments, type AssignmentMap, type MetricAssignment } from './runtime-data/assignments'
 
 export function CockpitPage({
   initialCluster = 'readiness',
@@ -41,28 +42,14 @@ export function CockpitPage({
     Record<string, { alarm: string; insight: string; action: string; source?: string }>
   >({})
   const narrativeReqRef = useRef(0)
-  const [metricAssignments, setMetricAssignments] = useState<
-    Record<string, { owner: string; note: string; targetDate: string; assignedAt: string }>
-  >({})
+  const [metricAssignments, setMetricAssignments] = useState<AssignmentMap>({})
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem('ta_metric_assignments')
-      if (raw) {
-        const parsed = JSON.parse(raw) as Record<string, { owner: string; note: string; targetDate: string; assignedAt: string }>
-        setMetricAssignments(parsed)
-      }
-    } catch {
-      // Ignore localStorage hydration failures.
-    }
+    setMetricAssignments(loadAssignments())
   }, [])
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem('ta_metric_assignments', JSON.stringify(metricAssignments))
-    } catch {
-      // Ignore persistence failures.
-    }
+    saveAssignments(metricAssignments)
   }, [metricAssignments])
 
   const filterOptions = useMemo(() => deriveFilterOptions(dataset.rows), [dataset])
@@ -234,7 +221,7 @@ export function CockpitPage({
     return `Dataset: ${dataset.name} | Rows: ${dataset.rows.length.toLocaleString()} | Filtered: ${filteredCount.toLocaleString()}`
   }, [dataset, filteredRows])
 
-  const handleAssignMetric = (metricId: string, assignment: { owner: string; note: string; targetDate: string; assignedAt: string }) => {
+  const handleAssignMetric = (metricId: string, assignment: MetricAssignment) => {
     setMetricAssignments((prev) => ({ ...prev, [metricId]: assignment }))
   }
 
@@ -347,6 +334,7 @@ export function CockpitPage({
         metricSnapshot={metricSnapshot}
         insightContext={insightContext}
         filters={filters}
+        metricTrends={currentMetricTrends}
         contextVersion={contextVersion}
         onOpenFilters={() => setFiltersOpen(true)}
         onExpandMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: true }))}

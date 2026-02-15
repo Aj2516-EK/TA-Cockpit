@@ -215,5 +215,26 @@
     "cluster": "economics",
     "tags": ["playbook", "actions", "economics"],
     "text": "When economics KPIs are red: optimize channel spend, reduce agency reliance for non-critical roles, tighten intake quality, and shorten feedback cycles. Monitor cost per acquisition, posting effectiveness, and offer yield together to avoid local optimizations."
+  },
+  {
+    "id": "global.trend_interpretation",
+    "title": "Per-Metric Trend Interpretation Guide",
+    "cluster": "global",
+    "tags": ["trends", "interpretation", "direction"],
+    "text": "metricTrends provides 12-week ISO-week trend arrays per metric. Compare the average of the last 3 weeks to the prior 3 weeks to assess direction. A change of more than 5 percent suggests a meaningful shift. Use natural language: 'improving', 'declining', 'stable'. For time-based metrics (lower is better), a declining value means improvement. Always cite the specific weeks or range when referencing trends."
+  },
+  {
+    "id": "global.cost_breakdown_fields",
+    "title": "Hiring Cost Breakdown Fields",
+    "cluster": "economics",
+    "tags": ["cost", "breakdown", "economics"],
+    "text": "Total_Hiring_Cost is the sum of four components: Advertising_Cost (job board and media spend), Agency_Fee (third-party recruiter fees), Technology_Cost (ATS, assessment tools), and Recruiter_Cost (internal recruiter time). Use these for cost allocation analysis. All values are in AED."
+  },
+  {
+    "id": "global.candidate_enrichment_fields",
+    "title": "Candidate Skills & Readiness Fields",
+    "cluster": "readiness",
+    "tags": ["skills", "readiness", "candidate", "bench_strength"],
+    "text": "Extended candidate fields: Primary_Skills and Skillset_Category classify role fit. Skill_Proficiency_Level (Intermediate/Advanced/Expert) measures depth. Future_Readiness_Score (0-100) assesses long-term potential. Bench_Strength_Tag (Hot/Warm/Cold) flags pipeline urgency. Availability_Window indicates start readiness (Immediate, 2 Weeks, 1 Month, 2-3 Months). Transferable_Skill_Match_% (0-100) measures cross-functional adaptability."
   }
 ]
