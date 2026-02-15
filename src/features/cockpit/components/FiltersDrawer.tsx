@@ -1,7 +1,7 @@
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
 import type { FilterOptions, Filters } from '../runtime-data/types'
-import type { ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 
 export function FiltersDrawer({
   open,
@@ -196,6 +196,16 @@ function MultiChips({
   selected: string[]
   onToggle: (value: string) => void
 }) {
+  const [query, setQuery] = useState('')
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredValues = useMemo(
+    () =>
+      normalizedQuery.length === 0
+        ? values
+        : values.filter((v) => v.toLowerCase().includes(normalizedQuery)),
+    [normalizedQuery, values],
+  )
+
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -206,11 +216,25 @@ function MultiChips({
           <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{selected.length} selected</div>
         )}
       </div>
+      {values.length > 8 && (
+        <div className="mb-2">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${label.toLowerCase()}...`}
+            className="w-full rounded-xl border border-slate-900/10 bg-white/70 px-3 py-2 text-[12px] text-slate-900 outline-none focus:ring-2 focus:ring-[color:var(--ta-primary)]/40 dark:border-white/10 dark:bg-white/5 dark:text-white"
+            aria-label={`Search ${label}`}
+          />
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {values.length === 0 ? (
           <span className="text-[12px] text-slate-500 dark:text-slate-400">No values</span>
+        ) : filteredValues.length === 0 ? (
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">No matches</span>
         ) : (
-          values.slice(0, 30).map((v) => {
+          filteredValues.map((v) => {
             const active = selected.includes(v)
             return (
               <button
@@ -230,9 +254,6 @@ function MultiChips({
           })
         )}
       </div>
-      {values.length > 30 && (
-        <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">Showing first 30 values</div>
-      )}
     </div>
   )
 }
