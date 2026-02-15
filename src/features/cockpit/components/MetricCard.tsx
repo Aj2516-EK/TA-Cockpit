@@ -68,7 +68,7 @@ export function MetricCard({
               event.stopPropagation()
               setInfoOpen(true)
             }}
-            className={cn('inline-flex h-8 w-8 items-center justify-center rounded-full', ragPillClass(metric.rag))}
+            className={cn('inline-flex h-10 w-10 items-center justify-center rounded-full', ragPillClass(metric.rag))}
             role="button"
             tabIndex={0}
             onKeyDown={(event) => {
@@ -101,7 +101,7 @@ export function MetricCard({
             event.stopPropagation()
             setVizOpen((v) => !v)
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25 transition hover:bg-[color:var(--ta-primary)]/20 active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25 transition hover:bg-[color:var(--ta-primary)]/20 active:scale-[0.98]"
         >
           <Icon name="show_chart" className="text-[18px]" />
           Visualize
@@ -113,7 +113,7 @@ export function MetricCard({
             openAssign()
             if (!expanded) onToggle()
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10"
         >
           <Icon name="assignment_ind" className="text-[18px]" />
           {assignment ? 'Reassign' : 'Assign Owner'}
@@ -123,11 +123,11 @@ export function MetricCard({
       {/* Visualization popup */}
       {vizOpen && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-2 sm:p-4"
           onClick={() => setVizOpen(false)}
         >
           <div
-            className="max-h-[90vh] w-full max-w-[680px] overflow-y-auto rounded-[22px] border border-white/15 bg-slate-900 p-6 text-left shadow-[0_16px_60px_rgba(0,0,0,0.45)]"
+            className="max-h-[90vh] w-full max-w-[680px] overflow-y-auto rounded-[22px] border border-white/15 bg-slate-900 p-4 text-left shadow-[0_16px_60px_rgba(0,0,0,0.45)] sm:p-6"
             onClick={(event) => event.stopPropagation()}
           >
             {/* Header */}
@@ -243,11 +243,11 @@ export function MetricCard({
       </div>
       {infoOpen ? (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-2 sm:p-4"
           onClick={() => setInfoOpen(false)}
         >
           <div
-            className="w-full max-w-[540px] rounded-[22px] border border-white/15 bg-slate-900 p-5 text-left shadow-[0_16px_60px_rgba(0,0,0,0.45)]"
+            className="w-full max-w-[540px] rounded-[22px] border border-white/15 bg-slate-900 p-4 text-left shadow-[0_16px_60px_rgba(0,0,0,0.45)] sm:p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">

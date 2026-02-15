@@ -104,9 +104,9 @@ export function ChatWidget({
       {/* Floating chat panel */}
       <div
         className={cn(
-          'fixed bottom-20 right-5 z-[60] flex h-[520px] w-[380px] max-w-[calc(100vw-2.5rem)] flex-col',
+          'fixed inset-2 bottom-16 z-[60] flex flex-col md:inset-auto md:bottom-20 md:right-5 md:h-[520px] md:w-[380px] md:max-w-[calc(100vw-2.5rem)]',
           'rounded-[24px] border border-slate-900/10 bg-white/90 shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl',
-          'dark:border-white/10 dark:bg-slate-950/80',
+          'dark:border-white/10 dark:bg-slate-950/90',
           'origin-bottom-right transition-all duration-200',
           open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0',
         )}
@@ -114,7 +114,7 @@ export function ChatWidget({
       >
         {/* Header */}
         <div className="flex items-center gap-2 border-b border-slate-900/10 px-4 py-3 dark:border-white/10">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20">
             <Icon name="auto_awesome" className="text-[18px]" />
           </span>
           <div className="min-w-0 flex-1">
@@ -123,7 +123,7 @@ export function ChatWidget({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900/5 text-slate-600 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/7"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900/5 text-slate-600 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/7"
             aria-label="Close AI chat"
           >
             <Icon name="close" className="text-[18px]" />
@@ -168,7 +168,7 @@ export function ChatWidget({
                         if (status !== 'ready') return
                         sendMessage({ text: p })
                       }}
-                      className="rounded-2xl bg-slate-900/5 px-3 py-1.5 text-[12px] font-semibold text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                      className="rounded-2xl bg-slate-900/5 px-3 py-2 text-[12px] font-semibold text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
                     >
                       {p}
                     </button>
@@ -206,11 +206,11 @@ export function ChatWidget({
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-xl bg-[color:var(--ta-primary)] px-2.5 py-1.5 text-white transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-xl bg-[color:var(--ta-primary)] px-3 py-2 text-white transition hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                 disabled={status !== 'ready'}
                 aria-label="Send message"
               >
-                <Icon name="send" className="text-[16px]" />
+                <Icon name="send" className="text-[17px]" />
               </button>
             </div>
           </form>

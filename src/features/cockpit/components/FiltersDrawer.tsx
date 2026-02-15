@@ -30,7 +30,7 @@ export function FiltersDrawer({
     <>
       <div
         className={cn(
-          'fixed inset-0 z-[55] bg-black/30 backdrop-blur-sm transition',
+          'fixed inset-0 z-[62] bg-black/30 backdrop-blur-sm transition',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={onClose}
@@ -38,8 +38,8 @@ export function FiltersDrawer({
       />
       <aside
         className={cn(
-          'fixed right-0 top-0 z-[56] h-dvh w-[360px] max-w-[92vw] border-l border-slate-900/10 bg-white/85 backdrop-blur-xl',
-          'dark:border-white/10 dark:bg-slate-950/65',
+          'fixed right-0 top-0 z-[63] h-dvh w-full border-l border-slate-900/10 bg-white/85 backdrop-blur-xl sm:w-[360px] sm:max-w-[92vw]',
+          'dark:border-white/10 dark:bg-slate-950/85',
           'transition-transform duration-200',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
@@ -78,7 +78,7 @@ export function FiltersDrawer({
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
                   <Field label="Date from">
                     <input
                       type="date"
@@ -155,14 +155,14 @@ export function FiltersDrawer({
               <button
                 type="button"
                 onClick={onReset}
-                className="flex-1 rounded-2xl bg-slate-900/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
+                className="flex-1 rounded-2xl bg-slate-900/5 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 active:scale-[0.98]"
+                className="flex-1 rounded-2xl bg-[color:var(--ta-primary)] px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider text-white transition hover:brightness-110 active:scale-[0.98]"
               >
                 Done
               </button>

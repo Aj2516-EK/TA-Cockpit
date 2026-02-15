@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../../lib/cn'
 import { Icon } from '../../../ui/Icon'
-import { MessageResponse } from '@/components/ai-elements/message'
 import type { ClusterId, Metric } from '../model'
 import { useClusterInsights } from '../insights/useClusterInsights'
 import type { InsightContext } from '../runtime-data/insights'
@@ -67,15 +66,6 @@ export function ClusterBrief({
     return () => window.clearTimeout(t)
   }, [contextKey, data, lastGeneratedContextKey])
 
-  const formattedText = useMemo(() => {
-    if (!data) return ''
-    const lines = [data.headline, '', ...data.bullets.map((b) => `- ${b}`), '', `Recommended action: ${data.action}`]
-    if (data.watchouts?.length) {
-      lines.push('', ...data.watchouts.map((w) => `Watchout: ${w}`))
-    }
-    return lines.join('\n')
-  }, [data])
-
   return (
     <section className="rounded-[24px] border border-slate-900/10 bg-white/55 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
       <div className="flex items-start justify-between gap-3">
@@ -126,18 +116,103 @@ export function ClusterBrief({
         </div>
       )}
 
-      <div className="mt-3 rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[13px] font-normal leading-relaxed text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+      <div className="mt-3">
         {isLoading ? (
-          <InsightsLoadingState />
-        ) : formattedText ? (
-          <MessageResponse>{formattedText}</MessageResponse>
+          <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+            <InsightsLoadingState />
+          </div>
+        ) : data ? (
+          <InsightsStructuredView data={data} />
         ) : (
-          <div className="text-slate-500 dark:text-slate-400">
+          <div className="rounded-[20px] border border-slate-900/10 bg-white/60 p-4 text-[13px] text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-400">
             Click Generate to produce data-grounded AI insights for this cluster.
           </div>
         )}
       </div>
     </section>
+  )
+}
+
+function InsightsStructuredView({
+  data,
+}: {
+  data: { headline: string; bullets: string[]; action: string; watchouts: string[] }
+}) {
+  return (
+    <div className="space-y-3">
+      {/* Headline */}
+      <div className="rounded-[18px] border border-slate-900/10 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20">
+            <Icon name="summarize" className="text-[18px]" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ta-primary)]">
+              Summary
+            </div>
+            <div className="mt-1 text-[14px] font-semibold leading-relaxed text-slate-900 dark:text-white">
+              {data.headline}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Key Findings */}
+      {data.bullets.length > 0 && (
+        <div className="rounded-[18px] border border-slate-900/10 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            Key Findings
+          </div>
+          <div className="space-y-2.5">
+            {data.bullets.map((bullet, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[color:var(--ta-primary)]/50" />
+                <div className="text-[13px] leading-relaxed text-slate-700 dark:text-slate-200">
+                  {bullet}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recommended Action */}
+      <div className="rounded-[18px] border border-[color:var(--ta-primary)]/25 bg-[color:var(--ta-primary)]/8 p-4 dark:bg-[color:var(--ta-primary)]/12">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[color:var(--ta-primary)]/15 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25">
+            <Icon name="target" className="text-[18px]" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ta-primary)]">
+              Recommended Action
+            </div>
+            <div className="mt-1 text-[13px] font-medium leading-relaxed text-slate-800 dark:text-slate-100">
+              {data.action}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Watchouts */}
+      {(data.watchouts?.length ?? 0) > 0 && (
+        <div className="rounded-[18px] border border-amber-500/25 bg-amber-500/8 p-4 dark:bg-amber-500/12">
+          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">
+            <Icon name="warning" className="text-[16px]" />
+            Watchouts
+          </div>
+          <div className="space-y-2">
+            {data.watchouts.map((w, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                <div className="text-[13px] leading-relaxed text-amber-900 dark:text-amber-100">
+                  {w}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

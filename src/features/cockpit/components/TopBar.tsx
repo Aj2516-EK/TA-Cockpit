@@ -7,26 +7,45 @@ export function TopBar({
   onOpenFilters,
   datasetLabel,
   onOpenDataInspector,
+  onOpenMobileSidebar,
 }: {
   darkMode: boolean
   onToggleDarkMode: () => void
   onOpenFilters: () => void
   datasetLabel: string
   onOpenDataInspector: () => void
+  onOpenMobileSidebar?: () => void
 }) {
   return (
     <header
       className={cn(
         'flex items-center justify-between gap-3 border-b border-slate-900/10 bg-white/55 px-4 py-3 backdrop-blur',
-        'dark:border-white/10 dark:bg-slate-950/25',
+        'dark:border-white/10 dark:bg-slate-950/55',
       )}
     >
-      <div className="min-w-0">
-        <div className="truncate bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 bg-clip-text text-[32px] font-black tracking-[0.08em] text-transparent drop-shadow-[0_0_16px_rgba(251,146,60,0.45)]">
-          FIKRAH
-        </div>
-        <div className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300">
-          Talent Acquisition Intelligence Cockpit
+      <div className="flex items-center gap-3 min-w-0">
+        {onOpenMobileSidebar && (
+          <button
+            type="button"
+            onClick={onOpenMobileSidebar}
+            className={cn(
+              'inline-flex h-10 w-10 items-center justify-center rounded-2xl md:hidden',
+              'bg-slate-900/5 text-slate-700 ring-1 ring-slate-900/10 transition hover:bg-slate-900/10',
+              'dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
+            )}
+            aria-label="Open navigation"
+            title="Menu"
+          >
+            <Icon name="menu" className="text-[20px]" />
+          </button>
+        )}
+        <div className="min-w-0">
+          <div className="truncate bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 bg-clip-text text-[22px] font-black tracking-[0.08em] text-transparent drop-shadow-[0_0_16px_rgba(251,146,60,0.45)] md:text-[32px]">
+            FIKRAH
+          </div>
+          <div className="hidden truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-300 sm:block">
+            Talent Acquisition Intelligence Cockpit
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { clusters, computeMetricsByCluster, type ClusterId, type Metric } from './model'
-import { SidebarNav } from './components/SidebarNav'
+import { SidebarNav, MobileSidebarOverlay } from './components/SidebarNav'
 import { TopBar } from './components/TopBar'
 import { MetricsGrid } from './components/MetricsGrid'
 import { FiltersDrawer } from './components/FiltersDrawer'
@@ -31,6 +31,7 @@ export function CockpitPage({
   const [activeCluster, setActiveCluster] = useState<ClusterId>(initialCluster)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dataInspectorOpen, setDataInspectorOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>({})
@@ -244,16 +245,18 @@ export function CockpitPage({
 
   return (
     <div className="h-dvh w-dvw overflow-hidden bg-slate-50 dark:bg-[radial-gradient(90%_80%_at_0%_0%,rgba(33,150,243,0.16),transparent_55%),radial-gradient(85%_70%_at_100%_0%,rgba(103,58,183,0.12),transparent_60%),radial-gradient(70%_80%_at_100%_100%,rgba(233,30,99,0.10),transparent_55%)]">
-      <div className="h-full bg-slate-50 dark:bg-slate-950/40">
-        <div className="grid h-full grid-cols-[auto_1fr]">
-          <SidebarNav
-            clusters={clusters}
-            activeCluster={activeCluster}
-            onSelectCluster={(id) => setActiveCluster(id)}
-            collapsed={sidebarCollapsed}
-            onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
-            onNavigateHome={onNavigateHome}
-          />
+      <div className="h-full bg-slate-50 dark:bg-slate-950/70">
+        <div className="grid h-full grid-cols-1 md:grid-cols-[auto_1fr]">
+          <div className="hidden md:block">
+            <SidebarNav
+              clusters={clusters}
+              activeCluster={activeCluster}
+              onSelectCluster={(id) => setActiveCluster(id)}
+              collapsed={sidebarCollapsed}
+              onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
+              onNavigateHome={onNavigateHome}
+            />
+          </div>
 
           <div className="min-w-0">
             <div className="flex h-dvh min-w-0 flex-col">
@@ -263,21 +266,22 @@ export function CockpitPage({
                 onOpenFilters={() => setFiltersOpen(true)}
                 datasetLabel={datasetLabel}
                 onOpenDataInspector={() => setDataInspectorOpen(true)}
+                onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
               />
 
-              <main className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+              <main className="min-h-0 flex-1 space-y-4 overflow-x-hidden overflow-y-auto px-3 py-3 sm:px-6 sm:py-6">
                 {/* Cluster header */}
-                <section className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/60">
+                <section className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/75">
                   <div className="text-[24px] font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-[30px]">
                     {currentCluster.title}
                   </div>
-                  <div className="mt-2 text-[15px] font-medium leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[17px]">
+                  <div className="mt-2 break-words text-[15px] font-medium leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[17px]">
                     {currentCluster.description}
                   </div>
                 </section>
 
                 {/* Overall Health Score */}
-                <section className="flex items-center gap-5 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/60">
+                <section className="flex flex-wrap items-center gap-4 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/75 sm:gap-5">
                   <HealthScoreRing score={healthScore} />
                   <div>
                     <div className="text-[15px] font-bold text-slate-900 dark:text-white">Overall Health Score</div>
@@ -368,6 +372,20 @@ export function CockpitPage({
         }
         metric={insightMetricId ? metricById.get(insightMetricId) ?? null : null}
       />
+
+      <div className="md:hidden">
+        <MobileSidebarOverlay
+          open={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
+          clusters={clusters}
+          activeCluster={activeCluster}
+          onSelectCluster={(id) => {
+            setActiveCluster(id)
+            setMobileSidebarOpen(false)
+          }}
+          onNavigateHome={onNavigateHome}
+        />
+      </div>
     </div>
   )
 }

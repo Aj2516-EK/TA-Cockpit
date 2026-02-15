@@ -147,7 +147,7 @@ export function HomePage({
             <button
               type="button"
               onClick={() => onOpenJourney(selectedCluster)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 text-[14px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(251,146,60,0.35)] transition hover:brightness-110"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 text-[13px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(251,146,60,0.35)] transition hover:brightness-110 sm:text-[14px]"
             >
               Launch Cockpit
               <Icon name="arrow_outward" className="text-[18px]" />

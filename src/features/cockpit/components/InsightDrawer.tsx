@@ -24,7 +24,7 @@ export function InsightDrawer({
     <>
       <div
         className={cn(
-          'fixed inset-0 z-[57] bg-black/30 backdrop-blur-sm transition',
+          'fixed inset-0 z-[62] bg-black/30 backdrop-blur-sm transition',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={onClose}
@@ -32,8 +32,8 @@ export function InsightDrawer({
       />
       <aside
         className={cn(
-          'fixed right-0 top-0 z-[58] h-dvh w-[520px] max-w-[96vw] border-l border-slate-900/10 bg-white/90 backdrop-blur-xl',
-          'dark:border-white/10 dark:bg-slate-950/70',
+          'fixed right-0 top-0 z-[63] h-dvh w-full border-l border-slate-900/10 bg-white/90 backdrop-blur-xl sm:w-[520px] sm:max-w-[96vw]',
+          'dark:border-white/10 dark:bg-slate-950/85',
           'transition-transform duration-200',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
