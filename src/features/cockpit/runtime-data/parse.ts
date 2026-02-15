@@ -34,9 +34,22 @@ function toGender(v: unknown): 'Female' | 'Male' | null {
 function toDate(v: unknown): Date | null {
   if (v == null || v === '') return null
   if (v instanceof Date && Number.isFinite(v.getTime())) return new Date(v.getTime())
-  // xlsx often gives ISO yyyy-mm-dd strings when defval/raw settings vary
+  // Handle Excel serial date numbers (e.g. 45615 = 2024-11-18)
+  if (typeof v === 'number' && v > 25569 && v < 73050) {
+    // Excel epoch is 1900-01-01, but has a leap-year bug (day 60 = Feb 29, 1900 which doesn't exist)
+    const ms = (v - 25569) * 86400000
+    const d = new Date(ms)
+    return Number.isFinite(d.getTime()) ? d : null
+  }
   const s = toTrimmedString(v)
   if (!s) return null
+  // Check if it's a numeric string (Excel serial stored as text)
+  const n = Number(s)
+  if (Number.isFinite(n) && n > 25569 && n < 73050) {
+    const ms = (n - 25569) * 86400000
+    const d = new Date(ms)
+    return Number.isFinite(d.getTime()) ? d : null
+  }
   const d = new Date(s)
   return Number.isFinite(d.getTime()) ? d : null
 }

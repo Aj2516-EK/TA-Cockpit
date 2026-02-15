@@ -50,7 +50,6 @@ export function HomePage({
   darkMode: boolean
   onToggleDarkMode: () => void
 }) {
-  const [loadedFileName, setLoadedFileName] = useState<string | null>(null)
   const [selectedCluster, setSelectedCluster] = useState<ClusterId>('readiness')
   const emiratesGif =
     'https://commons.wikimedia.org/wiki/Special:FilePath/Emirates_77W_wing_view,_July_2015.gif'
@@ -100,22 +99,6 @@ export function HomePage({
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-slate-700/55 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-100 ring-1 ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:bg-slate-700/70">
-                <Icon name="upload" className="text-[18px]" />
-                <span>{loadedFileName ? 'File Loaded' : 'Upload'}</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={(e) => {
-                    const f = e.currentTarget.files?.[0]
-                    if (!f) return
-                    setLoadedFileName(f.name)
-                    e.currentTarget.value = ''
-                  }}
-                />
-              </label>
-
               <button
                 type="button"
                 onClick={onToggleDarkMode}
@@ -130,66 +113,47 @@ export function HomePage({
         </header>
 
         <section className="mt-5 rounded-[30px] border border-white/15 bg-slate-800/50 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-            <div>
-              <div className="text-[35px] font-black tracking-tight text-slate-100 sm:text-[48px]">Talent Acquisition Journey</div>
-            </div>
-            <div className="rounded-3xl border border-white/15 bg-slate-700/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-300">Dataset Status</div>
-              <div className="mt-2 text-[14px] font-semibold text-slate-100">
-                {loadedFileName ? loadedFileName : 'Upload a file to unlock journey sections'}
-              </div>
-            </div>
-          </div>
+          <div className="text-[35px] font-black tracking-tight text-slate-100 sm:text-[48px]">Talent Acquisition Journey</div>
         </section>
 
-        {loadedFileName ? (
-          <main className="mt-6">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {journeyCards.map((card) => (
-              <button
-                key={card.id}
-                type="button"
-                onClick={() => setSelectedCluster(card.id)}
-                className={cn(
-                  'group relative overflow-hidden rounded-[24px] border border-white/15 bg-slate-800/52 p-5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_rgba(0,0,0,0.32)] transition',
-                  'hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_28px_rgba(0,0,0,0.38)]',
-                  selectedCluster === card.id && 'ring-2 ring-[color:var(--ta-primary)]/45',
-                )}
-                title={`Select ${card.label} journey`}
-                aria-label={`Select ${card.label} journey`}
-              >
-                <div className={cn('pointer-events-none absolute inset-0 bg-gradient-to-br', card.accent)} />
-                <div className="relative">
-                  <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-700/70 text-orange-200 ring-1 ring-orange-300/35 shadow-[0_0_12px_rgba(251,146,60,0.2)]">
-                    <Icon name={card.icon} className="text-[28px]" />
-                  </span>
-                  <div className="mt-4 text-[20px] font-bold tracking-tight text-slate-100">{card.label}</div>
-                  <div className="mt-1 text-[13px] leading-relaxed text-slate-300">{card.subtitle}</div>
-                </div>
-              </button>
-            ))}
-            </div>
+        <main className="mt-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {journeyCards.map((card) => (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => setSelectedCluster(card.id)}
+              className={cn(
+                'group relative overflow-hidden rounded-[24px] border border-white/15 bg-slate-800/52 p-5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_rgba(0,0,0,0.32)] transition',
+                'hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_28px_rgba(0,0,0,0.38)]',
+                selectedCluster === card.id && 'ring-2 ring-[color:var(--ta-primary)]/45',
+              )}
+              title={`Select ${card.label} journey`}
+              aria-label={`Select ${card.label} journey`}
+            >
+              <div className={cn('pointer-events-none absolute inset-0 bg-gradient-to-br', card.accent)} />
+              <div className="relative">
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-700/70 text-orange-200 ring-1 ring-orange-300/35 shadow-[0_0_12px_rgba(251,146,60,0.2)]">
+                  <Icon name={card.icon} className="text-[28px]" />
+                </span>
+                <div className="mt-4 text-[20px] font-bold tracking-tight text-slate-100">{card.label}</div>
+                <div className="mt-1 text-[13px] leading-relaxed text-slate-300">{card.subtitle}</div>
+              </div>
+            </button>
+          ))}
+          </div>
 
-            <section className="mt-5 rounded-[30px] border border-white/15 bg-slate-800/50 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
-              <button
-                type="button"
-                onClick={() => onOpenJourney(selectedCluster)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 text-[14px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(251,146,60,0.35)] transition hover:brightness-110"
-              >
-                Launch Cockpit
-                <Icon name="arrow_outward" className="text-[18px]" />
-              </button>
-            </section>
-          </main>
-        ) : (
-          <main className="mt-6 rounded-[24px] border border-dashed border-slate-900/20 bg-white/65 p-8 text-center dark:border-white/20 dark:bg-slate-950/30">
-            <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[color:var(--ta-primary)]/12 text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20">
-              <Icon name="flight_takeoff" className="text-[28px]" />
-            </div>
-            <div className="mt-3 text-[15px] font-semibold text-slate-800 dark:text-slate-100">Upload a file to enable the five journey sections</div>
-          </main>
-        )}
+          <section className="mt-5 rounded-[30px] border border-white/15 bg-slate-800/50 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur sm:p-8">
+            <button
+              type="button"
+              onClick={() => onOpenJourney(selectedCluster)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 text-[14px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_0_20px_rgba(251,146,60,0.35)] transition hover:brightness-110"
+            >
+              Launch Cockpit
+              <Icon name="arrow_outward" className="text-[18px]" />
+            </button>
+          </section>
+        </main>
       </div>
     </div>
   )

@@ -6,16 +6,12 @@ export function TopBar({
   onToggleDarkMode,
   onOpenFilters,
   datasetLabel,
-  isUploading,
-  onUpload,
   onOpenDataInspector,
 }: {
   darkMode: boolean
   onToggleDarkMode: () => void
   onOpenFilters: () => void
   datasetLabel: string
-  isUploading: boolean
-  onUpload: (file: File) => void
   onOpenDataInspector: () => void
 }) {
   return (
@@ -39,35 +35,6 @@ export function TopBar({
           <Icon name="dataset" className="text-[18px]" />
           <span className="max-w-[220px] truncate">{datasetLabel}</span>
         </span>
-
-        <label
-          className={cn(
-            'inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-wider ring-1 transition',
-            isUploading
-              ? 'cursor-not-allowed bg-[color:var(--ta-primary)]/10 text-[color:var(--ta-primary)] ring-[color:var(--ta-primary)]/25'
-              : 'cursor-pointer bg-slate-900/5 text-slate-700 ring-slate-900/10 hover:bg-slate-900/10 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/7',
-          )}
-        >
-          {isUploading ? (
-            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current/35 border-t-current" />
-          ) : (
-            <Icon name="upload" className="text-[18px]" />
-          )}
-          <span className="hidden sm:inline">{isUploading ? 'Uploading...' : 'Upload'}</span>
-          <input
-            type="file"
-            className="hidden"
-            accept=".xlsx,.xls,.csv"
-            disabled={isUploading}
-            onChange={(e) => {
-              const f = e.currentTarget.files?.[0]
-              if (!f) return
-              onUpload(f)
-              // allow re-uploading the same filename
-              e.currentTarget.value = ''
-            }}
-          />
-        </label>
 
         <button
           type="button"

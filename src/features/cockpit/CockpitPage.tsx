@@ -10,7 +10,6 @@ import { HealthScoreRing } from './components/HealthScoreRing'
 import { DataInspectorDrawer } from './components/DataInspectorDrawer'
 import { InsightDrawer } from './components/InsightDrawer'
 import type { Dataset, Filters } from './runtime-data/types'
-import { parseUploadToDataset } from './runtime-data/parse'
 import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/filters'
 import { computeInsightContext } from './runtime-data/insights'
 import { computeAllMetricTrends } from './runtime-data/trends'
@@ -20,22 +19,20 @@ export function CockpitPage({
   onNavigateHome,
   darkMode,
   onToggleDarkMode,
+  dataset,
 }: {
   initialCluster?: ClusterId
   onNavigateHome?: () => void
   darkMode: boolean
   onToggleDarkMode: () => void
+  dataset: Dataset
 }) {
   const [activeCluster, setActiveCluster] = useState<ClusterId>(initialCluster)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [dataInspectorOpen, setDataInspectorOpen] = useState(false)
-  const [dataset, setDataset] = useState<Dataset | null>(null)
   const [filters, setFilters] = useState<Filters>({})
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [insightsAutoGenerateArmed, setInsightsAutoGenerateArmed] = useState(false)
   const [contextVersion, setContextVersion] = useState(0)
   const [insightMetricId] = useState<string | null>(null)
   const [insightOpen, setInsightOpen] = useState(false)
@@ -68,11 +65,8 @@ export function CockpitPage({
     }
   }, [metricAssignments])
 
-  const filterOptions = useMemo(() => deriveFilterOptions(dataset?.rows ?? null), [dataset])
-  const filteredRows = useMemo(() => {
-    if (!dataset) return null
-    return applyFilters(dataset.rows, filters)
-  }, [dataset, filters])
+  const filterOptions = useMemo(() => deriveFilterOptions(dataset.rows), [dataset])
+  const filteredRows = useMemo(() => applyFilters(dataset.rows, filters), [dataset, filters])
 
   const metricsByCluster = useMemo(() => computeMetricsByCluster({ rows: filteredRows }), [filteredRows])
 
@@ -136,9 +130,9 @@ export function CockpitPage({
       computeInsightContext({
         rows: filteredRows,
         currentMetrics,
-        recruiterActivityRows: dataset?.recruiterActivityRows,
+        recruiterActivityRows: dataset.recruiterActivityRows,
       }),
-    [filteredRows, currentMetrics, dataset?.recruiterActivityRows],
+    [filteredRows, currentMetrics, dataset.recruiterActivityRows],
   )
 
   const metricsForNarratives = useMemo(
@@ -155,7 +149,7 @@ export function CockpitPage({
   )
 
   useEffect(() => {
-    if (!dataset || metricsForNarratives.length === 0) {
+    if (metricsForNarratives.length === 0) {
       setMetricNarratives({})
       return
     }
@@ -236,8 +230,7 @@ export function CockpitPage({
   }, [allMetrics])
 
   const datasetLabel = useMemo(() => {
-    if (!dataset) return 'No dataset loaded (upload for demo)'
-    const filteredCount = filteredRows?.length ?? dataset.rows.length
+    const filteredCount = filteredRows.length
     return `Dataset: ${dataset.name} | Rows: ${dataset.rows.length.toLocaleString()} | Filtered: ${filteredCount.toLocaleString()}`
   }, [dataset, filteredRows])
 
@@ -274,33 +267,10 @@ export function CockpitPage({
                 onToggleDarkMode={onToggleDarkMode}
                 onOpenFilters={() => setFiltersOpen(true)}
                 datasetLabel={datasetLabel}
-                isUploading={isUploading}
                 onOpenDataInspector={() => setDataInspectorOpen(true)}
-                onUpload={async (file) => {
-                  if (isUploading) return
-                  setUploadError(null)
-                  setIsUploading(true)
-                  try {
-                    const ds = await parseUploadToDataset(file)
-                    setDataset(ds)
-                    setFilters(resetFilters())
-                    setExpanded({})
-                    setContextVersion((v) => v + 1)
-                    setInsightsAutoGenerateArmed(true)
-                  } catch (e) {
-                    setUploadError(e instanceof Error ? e.message : String(e))
-                  } finally {
-                    setIsUploading(false)
-                  }
-                }}
               />
 
               <main className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                {uploadError && (
-                  <section className="rounded-[20px] border border-rose-500/20 bg-rose-500/10 px-5 py-4 text-[13px] text-rose-700 shadow-sm dark:text-rose-200">
-                    {uploadError}
-                  </section>
-                )}
                 {/* Cluster header — full-width compact strip */}
                 <section className="flex flex-col gap-4 rounded-[24px] border border-white/20 bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 shadow-[0_0_20px_rgba(251,146,60,0.35)] sm:flex-row sm:items-center">
                   <div className="min-w-0 flex-1">
@@ -327,7 +297,7 @@ export function CockpitPage({
                     filters={filters}
                     insightContext={insightContext}
                     contextVersion={contextVersion}
-                    autoGenerateEnabled={insightsAutoGenerateArmed && Boolean(dataset)}
+                    autoGenerateEnabled
                   />
                 </div>
 
@@ -351,7 +321,7 @@ export function CockpitPage({
       <FiltersDrawer
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
-        disabled={!dataset}
+        disabled={false}
         filters={filters}
         options={filterOptions}
         onChange={(next) => {
