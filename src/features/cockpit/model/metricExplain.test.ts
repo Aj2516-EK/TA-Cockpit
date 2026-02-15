@@ -104,7 +104,7 @@ describe('meaningForMetric', () => {
   it('returns specific meaning for known metric IDs', () => {
     const result = meaningForMetric('metric.readiness.skill_readiness')
     expect(result.meaning).toContain('ready')
-    expect(result.formula).toContain('Skill_Match_Percentage')
+    expect(result.formula).toContain('Skill Criteria')
   })
 
   it('returns generic meaning for unknown metric IDs', () => {

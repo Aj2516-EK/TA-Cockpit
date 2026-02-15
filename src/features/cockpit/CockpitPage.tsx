@@ -235,8 +235,8 @@ export function CockpitPage({
   }
 
   return (
-    <div className="h-dvh w-dvw overflow-hidden bg-[radial-gradient(90%_80%_at_0%_0%,rgba(33,150,243,0.16),transparent_55%),radial-gradient(85%_70%_at_100%_0%,rgba(103,58,183,0.12),transparent_60%),radial-gradient(70%_80%_at_100%_100%,rgba(233,30,99,0.10),transparent_55%)]">
-      <div className="h-full bg-white dark:bg-slate-950/40">
+    <div className="h-dvh w-dvw overflow-hidden bg-slate-50 dark:bg-[radial-gradient(90%_80%_at_0%_0%,rgba(33,150,243,0.16),transparent_55%),radial-gradient(85%_70%_at_100%_0%,rgba(103,58,183,0.12),transparent_60%),radial-gradient(70%_80%_at_100%_100%,rgba(233,30,99,0.10),transparent_55%)]">
+      <div className="h-full bg-slate-50 dark:bg-slate-950/40">
         <div className="grid h-full grid-cols-[auto_1fr]">
           <SidebarNav
             clusters={clusters}
@@ -258,20 +258,23 @@ export function CockpitPage({
               />
 
               <main className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                {/* Cluster header — full-width compact strip */}
-                <section className="flex flex-col gap-4 rounded-[24px] border border-white/20 bg-gradient-to-r from-slate-500 via-orange-500 to-slate-500 px-5 py-4 shadow-[0_0_20px_rgba(251,146,60,0.35)] sm:flex-row sm:items-center">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[24px] font-extrabold tracking-tight text-white sm:text-[30px]">
-                      {currentCluster.title}
-                    </div>
-                    <div className="mt-2 text-[16px] font-medium leading-relaxed text-white/95 sm:text-[18px]">
-                      {currentCluster.description}
-                    </div>
+                {/* Cluster header */}
+                <section className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/60">
+                  <div className="text-[24px] font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-[30px]">
+                    {currentCluster.title}
                   </div>
-                  <div className="flex items-center gap-4 sm:shrink-0">
-                    <HealthScoreRing score={healthScore} />
-                    <div className="text-[13px] font-medium leading-relaxed text-white/90">
-                      Aggregated from RAG<br />status across all KPIs
+                  <div className="mt-2 text-[15px] font-medium leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[17px]">
+                    {currentCluster.description}
+                  </div>
+                </section>
+
+                {/* Overall Health Score */}
+                <section className="flex items-center gap-5 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm dark:border-white/12 dark:bg-slate-900/60">
+                  <HealthScoreRing score={healthScore} />
+                  <div>
+                    <div className="text-[15px] font-bold text-slate-900 dark:text-white">Overall Health Score</div>
+                    <div className="mt-1 text-[13px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                      Aggregated from RAG status across all KPIs
                     </div>
                   </div>
                 </section>

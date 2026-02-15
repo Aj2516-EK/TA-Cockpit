@@ -40,7 +40,7 @@ export function SidebarNav({
             </button>
             <div className="leading-tight">
               <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                TA Cockpit
+                Home
               </div>
             </div>
           </div>

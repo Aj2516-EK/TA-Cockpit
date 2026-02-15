@@ -49,7 +49,7 @@ export function MetricCard({
   }
 
   return (
-    <div id={metric.id} className={cn('rounded-[26px] border bg-slate-950/25 p-4', ragCardClass(metric.rag))}>
+    <div id={metric.id} className={cn('rounded-[26px] border bg-white p-4 dark:bg-slate-950/25', ragCardClass(metric.rag))}>
       <button
         type="button"
         onClick={onToggle}
@@ -84,10 +84,10 @@ export function MetricCard({
         </div>
 
         <div className="mt-3">
-          <div className="text-[13px] font-semibold tracking-tight text-white">{metric.title}</div>
+          <div className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">{metric.title}</div>
           <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-[22px] font-bold tracking-tight text-white">{metric.valueText}</div>
-            <div className="text-[11px] font-medium text-slate-300">Target: {metric.thresholdText}</div>
+            <div className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white">{metric.valueText}</div>
+            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-300">Target: {metric.thresholdText}</div>
           </div>
         </div>
       </button>
@@ -111,7 +111,7 @@ export function MetricCard({
             openAssign()
             if (!expanded) onToggle()
           }}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/5 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10"
         >
           <Icon name="assignment_ind" className="text-[18px]" />
           {assignment ? 'Reassign' : 'Assign Owner'}
@@ -172,13 +172,13 @@ export function MetricCard({
             ) : null}
 
             {assignOpen ? (
-              <div className="rounded-[18px] border border-slate-900/10 bg-slate-950/90 p-3 text-[12px] text-white shadow-sm dark:border-white/10">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
+              <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-3 text-[12px] text-slate-900 shadow-sm dark:border-white/10 dark:bg-slate-950/90 dark:text-white">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-white/70">
                   Assign Owner
                 </div>
                 <div className="mt-2 space-y-2">
                   <select
-                    className="w-full rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 text-[12px] font-semibold text-white"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-[12px] font-semibold text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-white"
                     value={assignee}
                     onChange={(e) => setAssignee(e.target.value)}
                   >
@@ -190,18 +190,18 @@ export function MetricCard({
                   </select>
                   <input
                     type="text"
-                    className="w-full rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 text-[12px] text-white placeholder-white/60"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-[12px] text-slate-900 placeholder-slate-400 dark:border-white/20 dark:bg-white/10 dark:text-white dark:placeholder-white/60"
                     placeholder="Instructions..."
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                   />
                   <div>
-                    <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/60">
+                    <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-white/60">
                       Target Completion Date
                     </div>
                     <input
                       type="date"
-                      className="mt-1 w-full rounded-xl border border-white/20 bg-white/10 px-2 py-1.5 text-[12px] text-white"
+                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-[12px] text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-white"
                       value={targetDate}
                       onChange={(e) => setTargetDate(e.target.value)}
                     />
@@ -209,7 +209,7 @@ export function MetricCard({
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      className="rounded-xl bg-white px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-900"
+                      className="rounded-xl bg-slate-900 px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white dark:bg-white dark:text-slate-900"
                       onClick={() => {
                         const assignedAt = new Date().toISOString()
                         onAssign({
@@ -227,7 +227,7 @@ export function MetricCard({
                     </button>
                     <button
                       type="button"
-                      className="rounded-xl bg-white/10 px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80"
+                      className="rounded-xl bg-slate-100 px-2 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:bg-white/10 dark:text-white/80"
                       onClick={() => setAssignOpen(false)}
                     >
                       Cancel
@@ -269,7 +269,11 @@ export function MetricCard({
               </div>
               <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Formula</div>
-                <div className="mt-1 text-[13px] leading-relaxed text-slate-200">{meta.formula}</div>
+                <div className="mt-1 text-[13px] font-semibold leading-relaxed text-white">{meta.formula}</div>
+              </div>
+              <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Healthy Threshold</div>
+                <div className="mt-1 text-[13px] font-semibold leading-relaxed text-emerald-300">{meta.threshold}</div>
               </div>
             </div>
           </div>
@@ -286,25 +290,25 @@ function AssignmentCard({ assignment, onClear }: { assignment: MetricAssignment;
     : assignment.assignedAt
 
   return (
-    <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
+    <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
             Assigned Owner
           </div>
-          <div className="mt-1 text-[14px] font-bold text-white">{assignment.owner}</div>
+          <div className="mt-1 text-[14px] font-bold text-slate-900 dark:text-white">{assignment.owner}</div>
           {assignment.note ? (
-            <div className="mt-1 text-[12px] text-slate-300">{assignment.note}</div>
+            <div className="mt-1 text-[12px] text-slate-600 dark:text-slate-300">{assignment.note}</div>
           ) : null}
-          <div className="mt-2 text-[11px] text-slate-400">
+          <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
             Target: {assignment.targetDate || 'TBD'}
           </div>
-          <div className="text-[11px] text-slate-400">Assigned: {assignedLabel}</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400">Assigned: {assignedLabel}</div>
         </div>
         <button
           type="button"
           onClick={onClear}
-          className="rounded-full bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
+          className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10"
         >
           Clear
         </button>
@@ -324,14 +328,14 @@ function Section({
 }) {
   const isMultiLine = value.includes('\n')
   return (
-    <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+    <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
       <div
         className={cn(
-          'mt-1 text-[13px] leading-relaxed text-slate-300',
-          tone === 'strong' && 'font-medium text-slate-200',
+          'mt-1 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300',
+          tone === 'strong' && 'font-medium text-slate-800 dark:text-slate-200',
           tone !== 'strong' && 'font-normal',
         )}
       >

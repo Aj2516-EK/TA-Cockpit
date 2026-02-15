@@ -82,7 +82,7 @@ export function TopBar({
 
         <span className="hidden items-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/20 dark:bg-[color:var(--ta-primary)]/15 sm:inline-flex">
           <Icon name="account_circle" className="text-[18px]" />
-          EVP-HR
+          HR Leader
         </span>
       </div>
     </header>
