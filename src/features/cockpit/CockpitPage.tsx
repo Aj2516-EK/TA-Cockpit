@@ -13,7 +13,7 @@ import type { Dataset, Filters } from './runtime-data/types'
 import { applyFilters, deriveFilterOptions, resetFilters } from './runtime-data/filters'
 import { computeInsightContext } from './runtime-data/insights'
 import { computeAllMetricTrends } from './runtime-data/trends'
-import { loadAssignments, saveAssignments, type AssignmentMap, type MetricAssignment } from './runtime-data/assignments'
+import { loadAssignments, saveAssignments, transitionStatus, type AssignmentMap, type AssignmentStatus, type MetricAssignment } from './runtime-data/assignments'
 
 export function CockpitPage({
   initialCluster = 'readiness',
@@ -225,6 +225,14 @@ export function CockpitPage({
     setMetricAssignments((prev) => ({ ...prev, [metricId]: assignment }))
   }
 
+  const handleUpdateAssignmentStatus = (metricId: string, newStatus: AssignmentStatus) => {
+    setMetricAssignments((prev) => {
+      const current = prev[metricId]
+      if (!current) return prev
+      return { ...prev, [metricId]: transitionStatus(current, newStatus) }
+    })
+  }
+
   const handleClearAssignment = (metricId: string) => {
     setMetricAssignments((prev) => {
       if (!prev[metricId]) return prev
@@ -301,6 +309,7 @@ export function CockpitPage({
                   assignments={metricAssignments}
                   onAssignMetric={handleAssignMetric}
                   onClearAssignment={handleClearAssignment}
+                  onUpdateAssignmentStatus={handleUpdateAssignmentStatus}
                 />
               </main>
             </div>

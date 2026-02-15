@@ -3,6 +3,7 @@ import type { Metric } from '../model'
 import { sortRag } from '../model'
 import { MetricCard, type MetricAssignment } from './MetricCard'
 import type { TrendPoint } from '../runtime-data/trends'
+import type { AssignmentStatus } from '../runtime-data/assignments'
 import type { ApplicationFactRow } from '../runtime-data/types'
 
 export function MetricsGrid({
@@ -14,6 +15,7 @@ export function MetricsGrid({
   assignments,
   onAssignMetric,
   onClearAssignment,
+  onUpdateAssignmentStatus,
 }: {
   metrics: Metric[]
   expanded: Record<string, boolean>
@@ -23,6 +25,7 @@ export function MetricsGrid({
   assignments: Record<string, MetricAssignment>
   onAssignMetric: (metricId: string, assignment: MetricAssignment) => void
   onClearAssignment: (metricId: string) => void
+  onUpdateAssignmentStatus: (metricId: string, newStatus: AssignmentStatus) => void
 }) {
   const ordered = useMemo(() => metrics.slice().sort((a, b) => sortRag(a.rag) - sortRag(b.rag)), [metrics])
 
@@ -39,6 +42,7 @@ export function MetricsGrid({
           assignment={assignments[m.id]}
           onAssign={(assignment) => onAssignMetric(m.id, assignment)}
           onClearAssignment={() => onClearAssignment(m.id)}
+          onUpdateStatus={(newStatus) => onUpdateAssignmentStatus(m.id, newStatus)}
         />
       ))}
     </div>

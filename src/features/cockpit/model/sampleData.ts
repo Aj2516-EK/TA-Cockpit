@@ -272,8 +272,8 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
     mk(
       {
         idSuffix: 'diverse_attraction',
-        title: 'Female Candidates Attraction',
-        valueText: '38.4%',
+        title: 'Gender Diversity in Attraction',
+        valueText: 'F 38.4% / M 61.6%',
         valueNum: 38.4,
         unit: '%',
         thresholdText: '> 40%',
@@ -288,8 +288,8 @@ export const metricTemplatesByCluster: Record<ClusterId, Metric[]> = {
     mk(
       {
         idSuffix: 'diverse_pipeline',
-        title: 'Female Talent Pipeline',
-        valueText: '29.7%',
+        title: 'Gender Diversity in Pipeline',
+        valueText: 'F 29.7% / M 70.3%',
         valueNum: 29.7,
         unit: '%',
         thresholdText: '> 40%',

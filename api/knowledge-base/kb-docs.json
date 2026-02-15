@@ -113,17 +113,17 @@
   },
   {
     "id": "metric.diversity.diverse_attraction",
-    "title": "Female Candidates Attraction",
+    "title": "Gender Diversity in Attraction",
     "cluster": "diversity",
     "tags": ["diversity", "top_of_funnel", "attraction"],
-    "text": "Definition: percent of unique candidates with Gender=Female in the filtered scope. Threshold reference: green > 40 percent, amber 35 to 40 percent, red below 35 percent."
+    "text": "Definition: gender split of unique candidates in the filtered scope, showing both Female and Male percentages. The Female percentage is evaluated against the threshold. Threshold reference: green > 40 percent Female, amber 35 to 40 percent Female, red below 35 percent Female."
   },
   {
     "id": "metric.diversity.diverse_pipeline",
-    "title": "Female Talent Pipeline",
+    "title": "Gender Diversity in Pipeline",
     "cluster": "diversity",
     "tags": ["diversity", "pipeline", "outcomes"],
-    "text": "Definition: percent of hired candidates with Gender=Female among hired candidates with gender available. Threshold reference: green > 40 percent, amber 32 to 40 percent, red below 32 percent."
+    "text": "Definition: gender split of hired candidates, showing both Female and Male percentages among hired candidates with gender available. The Female percentage is evaluated against the threshold. Threshold reference: green > 40 percent Female, amber 32 to 40 percent Female, red below 32 percent Female."
   },
   {
     "id": "metric.diversity.active_applicants",

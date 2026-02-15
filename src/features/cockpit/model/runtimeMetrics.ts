@@ -379,10 +379,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       const female = withGender.filter((r) => r.diversityFlag === 'Female').length
       const male = withGender.filter((r) => r.diversityFlag === 'Male').length
       const pct = (female / withGender.length) * 100
+      const malePct = (male / withGender.length) * 100
       const rag = ragForHigherIsBetter(pct, 40, 35)
       return {
         valueNum: pct,
-        valueText: fmtPct(pct, 1),
+        valueText: `F ${fmtPct(pct, 1)} / M ${fmtPct(malePct, 1)}`,
         thresholdText: '> 40%',
         rag,
         supportingFacts: [
@@ -401,10 +402,11 @@ export function computeMetric(metricId: string, rows: ApplicationFactRow[]): Com
       const female = withGender.filter((r) => r.diversityFlag === 'Female').length
       const male = withGender.filter((r) => r.diversityFlag === 'Male').length
       const pct = (female / withGender.length) * 100
+      const malePct = (male / withGender.length) * 100
       const rag = ragForHigherIsBetter(pct, 40, 32)
       return {
         valueNum: pct,
-        valueText: fmtPct(pct, 1),
+        valueText: `F ${fmtPct(pct, 1)} / M ${fmtPct(malePct, 1)}`,
         thresholdText: '> 40%',
         rag,
         supportingFacts: [

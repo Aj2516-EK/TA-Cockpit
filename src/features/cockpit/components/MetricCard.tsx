@@ -8,7 +8,7 @@ import { MetricViz } from './viz/MetricViz'
 import type { TrendPoint } from '../runtime-data/trends'
 import type { ApplicationFactRow } from '../runtime-data/types'
 
-import type { MetricAssignment } from '../runtime-data/assignments'
+import type { MetricAssignment, AssignmentStatus } from '../runtime-data/assignments'
 export type { MetricAssignment } from '../runtime-data/assignments'
 
 const ASSIGNEES = ['John', 'Jerry', 'Jack', 'Jina', 'Jisha', 'Jamal']
@@ -22,6 +22,7 @@ export function MetricCard({
   assignment,
   onAssign,
   onClearAssignment,
+  onUpdateStatus,
 }: {
   metric: Metric
   expanded: boolean
@@ -31,6 +32,7 @@ export function MetricCard({
   assignment?: MetricAssignment
   onAssign: (assignment: MetricAssignment) => void
   onClearAssignment: () => void
+  onUpdateStatus: (newStatus: AssignmentStatus) => void
 }) {
   const contentId = `${metric.id}-content`
   const [vizOpen, setVizOpen] = useState(false)
@@ -168,7 +170,7 @@ export function MetricCard({
             )}
 
             {assignment ? (
-              <AssignmentCard assignment={assignment} onClear={onClearAssignment} />
+              <AssignmentCard assignment={assignment} onClear={onClearAssignment} onUpdateStatus={onUpdateStatus} />
             ) : null}
 
             {assignOpen ? (
@@ -283,11 +285,42 @@ export function MetricCard({
   )
 }
 
-function AssignmentCard({ assignment, onClear }: { assignment: MetricAssignment; onClear: () => void }) {
+function AssignmentCard({
+  assignment,
+  onClear,
+  onUpdateStatus,
+}: {
+  assignment: MetricAssignment
+  onClear: () => void
+  onUpdateStatus: (newStatus: AssignmentStatus) => void
+}) {
   const assignedAt = new Date(assignment.assignedAt)
   const assignedLabel = Number.isFinite(assignedAt.getTime())
     ? assignedAt.toLocaleString()
     : assignment.assignedAt
+
+  const statusConfig = {
+    assigned: {
+      label: 'Assigned',
+      pillClass: 'bg-blue-100 text-blue-700 ring-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:ring-blue-500/30',
+      nextStatus: 'in_progress' as AssignmentStatus,
+      nextLabel: 'Start',
+    },
+    in_progress: {
+      label: 'In Progress',
+      pillClass: 'bg-amber-100 text-amber-700 ring-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:ring-amber-500/30',
+      nextStatus: 'resolved' as AssignmentStatus,
+      nextLabel: 'Resolve',
+    },
+    resolved: {
+      label: 'Resolved',
+      pillClass: 'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:ring-emerald-500/30',
+      nextStatus: 'assigned' as AssignmentStatus,
+      nextLabel: 'Re-open',
+    },
+  }
+
+  const config = statusConfig[assignment.status]
 
   return (
     <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
@@ -300,6 +333,18 @@ function AssignmentCard({ assignment, onClear }: { assignment: MetricAssignment;
           {assignment.note ? (
             <div className="mt-1 text-[12px] text-slate-600 dark:text-slate-300">{assignment.note}</div>
           ) : null}
+          <div className="mt-2 flex items-center gap-2">
+            <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1', config.pillClass)}>
+              {config.label}
+            </span>
+            <button
+              type="button"
+              onClick={() => onUpdateStatus(config.nextStatus)}
+              className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 ring-1 ring-slate-300 transition hover:bg-slate-300 dark:bg-white/10 dark:text-slate-200 dark:ring-white/15 dark:hover:bg-white/20"
+            >
+              {config.nextLabel}
+            </button>
+          </div>
           <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
             Target: {assignment.targetDate || 'TBD'}
           </div>
