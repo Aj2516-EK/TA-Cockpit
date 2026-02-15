@@ -338,6 +338,12 @@ export function CockpitPage({
         contextVersion={contextVersion}
         onOpenFilters={() => setFiltersOpen(true)}
         onExpandMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: true }))}
+        onSwitchCluster={(clusterId) => setActiveCluster(clusterId)}
+        onApplyFilter={(next) => {
+          setFilters(next)
+          setContextVersion((v) => v + 1)
+        }}
+        onAssignMetric={handleAssignMetric}
       />
 
       <InsightDrawer

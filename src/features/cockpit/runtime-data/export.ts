@@ -44,8 +44,9 @@ export function summarizeTrend(points: TrendPoint[]): string {
 export function buildExportRows(
   metricsByCluster: Record<ClusterId, Metric[]>,
   metricTrends: Record<string, TrendPoint[]>,
-  _filters: Filters,
+  filters: Filters,
 ): ExportRow[] {
+  void filters
   const rows: ExportRow[] = []
 
   for (const cluster of CLUSTER_ORDER) {

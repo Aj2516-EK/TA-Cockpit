@@ -13,6 +13,7 @@
     "rag:embed": "node scripts/generate-rag-embeddings.mjs",
     "rag:embed:dry": "node scripts/generate-rag-embeddings.mjs --dry-run",
     "openrouter:test": "node scripts/test-openrouter.mjs",
+    "ai:regression": "node scripts/ai-prompt-regression.mjs",
     "qdrant:upsert": "node scripts/qdrant-upsert-kb.mjs",
     "test": "vitest run",
     "test:watch": "vitest"

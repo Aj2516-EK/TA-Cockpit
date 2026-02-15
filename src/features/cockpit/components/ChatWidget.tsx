@@ -8,6 +8,7 @@ import type { CockpitUIMessage } from '../chat/tools'
 import type { InsightContext } from '../runtime-data/insights'
 import type { TrendPoint } from '../runtime-data/trends'
 import type { Filters } from '../runtime-data/types'
+import type { MetricAssignment } from '../runtime-data/assignments'
 
 export function ChatWidget({
   activeCluster,
@@ -18,6 +19,9 @@ export function ChatWidget({
   contextVersion,
   onOpenFilters,
   onExpandMetric,
+  onSwitchCluster,
+  onApplyFilter,
+  onAssignMetric,
 }: {
   activeCluster: ClusterId
   metricSnapshot: {
@@ -30,6 +34,9 @@ export function ChatWidget({
   contextVersion: number
   onOpenFilters: () => void
   onExpandMetric: (metricId: string) => void
+  onSwitchCluster: (clusterId: ClusterId) => void
+  onApplyFilter: (filters: Filters) => void
+  onAssignMetric: (metricId: string, assignment: MetricAssignment) => void
 }) {
   const [open, setOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -42,6 +49,9 @@ export function ChatWidget({
     metricTrends,
     onOpenFilters,
     onExpandMetric,
+    onSwitchCluster,
+    onApplyFilter,
+    onAssignMetric,
   })
 
   const [input, setInput] = useState('')
@@ -84,11 +94,11 @@ export function ChatWidget({
           'bg-[color:var(--ta-primary)] text-white shadow-[0_18px_60px_rgba(33,150,243,0.35)]',
           'transition hover:brightness-110 active:scale-[0.98]',
         )}
-        aria-label={open ? 'Close AI chat' : 'Open AI chat'}
-        title="Ask AI"
+        aria-label={open ? 'Close Fikrah Advisor' : 'Open Fikrah Advisor'}
+        title="Fikrah Advisor"
       >
         <Icon name={open ? 'close' : 'auto_awesome'} className="text-[22px]" />
-        <span className="text-[12px] font-bold uppercase tracking-wider">Ask AI</span>
+        <span className="text-[12px] font-bold uppercase tracking-wider">Fikrah Advisor</span>
       </button>
 
       {/* Floating chat panel */}
@@ -100,7 +110,7 @@ export function ChatWidget({
           'origin-bottom-right transition-all duration-200',
           open ? 'scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0',
         )}
-        aria-label="AI chat panel"
+        aria-label="Fikrah Advisor panel"
       >
         {/* Header */}
         <div className="flex items-center gap-2 border-b border-slate-900/10 px-4 py-3 dark:border-white/10">
@@ -108,7 +118,7 @@ export function ChatWidget({
             <Icon name="auto_awesome" className="text-[18px]" />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-bold text-slate-900 dark:text-white">Ask AI</div>
+            <div className="text-[13px] font-bold text-slate-900 dark:text-white">Fikrah Advisor</div>
           </div>
           <button
             type="button"
@@ -146,10 +156,10 @@ export function ChatWidget({
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[
-                    'Why are the red KPIs red in this cluster?',
-                    'What are the top 3 drivers of delay and what should we do next week?',
-                    'Which filter slice would most improve the worst KPI?',
-                    'Summarize the KPI snapshot in 5 bullets (no made-up numbers).',
+                    'In this cluster, which 2 KPIs are highest risk and why?',
+                    'Compare Referral vs Agency on quality, speed, and cost trade-offs.',
+                    'Filter to Flight Operations in Dubai and identify the top bottleneck.',
+                    'Give a 30-day action plan to move 2 red KPIs to amber.',
                   ].map((p) => (
                     <button
                       key={p}

@@ -9,7 +9,10 @@ const mockLocalStorage = {
   removeItem: (key: string) => { delete store[key] },
   clear: () => { for (const k of Object.keys(store)) delete store[k] },
   get length() { return Object.keys(store).length },
-  key: (_i: number) => null as string | null,
+  key: (i: number) => {
+    void i
+    return null as string | null
+  },
 }
 
 Object.defineProperty(globalThis, 'localStorage', { value: mockLocalStorage, writable: true })

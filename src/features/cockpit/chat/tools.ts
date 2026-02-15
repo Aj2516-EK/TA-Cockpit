@@ -39,6 +39,36 @@ export const cockpitTools = {
     }),
     execute: async () => 'Approved',
   },
+  assignMetric: {
+    description: 'Assign an owner to a metric and open an email draft',
+    inputSchema: z.object({
+      metricId: z.string(),
+      owner: z.string(),
+      email: z.string(),
+      note: z.string(),
+      targetDate: z.string(),
+    }),
+    execute: async () => 'assigned',
+  },
+  switchCluster: {
+    description: 'Navigate to a different dashboard cluster',
+    inputSchema: z.object({
+      clusterId: z.enum(['readiness', 'momentum', 'experience', 'diversity', 'economics']),
+    }),
+    execute: async () => 'switched',
+  },
+  applyFilter: {
+    description: 'Apply or clear dashboard filters',
+    inputSchema: z.object({
+      action: z.enum(['apply', 'clear']),
+      businessUnit: z.array(z.string()).optional(),
+      location: z.array(z.string()).optional(),
+      source: z.array(z.string()).optional(),
+      roleName: z.array(z.string()).optional(),
+      candidateType: z.array(z.string()).optional(),
+    }),
+    execute: async () => 'filters applied',
+  },
 } satisfies ToolSet
 
 export type CockpitUITools = InferUITools<typeof cockpitTools>
