@@ -337,6 +337,7 @@ export function CockpitPage({
                   expanded={expanded}
                   onToggleMetric={(metricId) => setExpanded((s) => ({ ...s, [metricId]: !s[metricId] }))}
                   trends={currentMetricTrends}
+                  filteredRows={filteredRows}
                   assignments={metricAssignments}
                   onAssignMetric={handleAssignMetric}
                   onClearAssignment={handleClearAssignment}

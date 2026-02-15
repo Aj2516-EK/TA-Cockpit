@@ -6,6 +6,7 @@ import { meaningForMetric } from '../model/metricExplain'
 import { ragCardClass, ragPillClass } from '../ui/ragStyles'
 import { MetricViz } from './viz/MetricViz'
 import type { TrendPoint } from '../runtime-data/trends'
+import type { ApplicationFactRow } from '../runtime-data/types'
 
 const ASSIGNEES = ['John', 'Jerry', 'Jack', 'Jina', 'Jisha', 'Jamal']
 
@@ -21,6 +22,7 @@ export function MetricCard({
   expanded,
   onToggle,
   trend,
+  filteredRows,
   assignment,
   onAssign,
   onClearAssignment,
@@ -29,6 +31,7 @@ export function MetricCard({
   expanded: boolean
   onToggle: () => void
   trend?: TrendPoint[]
+  filteredRows: ApplicationFactRow[] | null
   assignment?: MetricAssignment
   onAssign: (assignment: MetricAssignment) => void
   onClearAssignment: () => void
@@ -100,15 +103,10 @@ export function MetricCard({
             event.stopPropagation()
             setVizOpen((v) => !v)
           }}
-          className={cn(
-            'inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-wider ring-1 transition active:scale-[0.98]',
-            vizOpen
-              ? 'bg-[color:var(--ta-primary)] text-white ring-[color:var(--ta-primary)]/40 hover:brightness-110'
-              : 'bg-[color:var(--ta-primary)]/10 text-[color:var(--ta-primary)] ring-[color:var(--ta-primary)]/25 hover:bg-[color:var(--ta-primary)]/20',
-          )}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[color:var(--ta-primary)]/10 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[color:var(--ta-primary)] ring-1 ring-[color:var(--ta-primary)]/25 transition hover:bg-[color:var(--ta-primary)]/20 active:scale-[0.98]"
         >
           <Icon name="show_chart" className="text-[18px]" />
-          {vizOpen ? 'Hide Chart' : 'Visualize'}
+          Visualize
         </button>
         <button
           type="button"
@@ -124,17 +122,44 @@ export function MetricCard({
         </button>
       </div>
 
-      {/* Inline visualization — toggled by Visualize button */}
-      <div className={cn('grid transition-all duration-300', vizOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
-        <div className="min-h-0 overflow-hidden">
-          <div className="mt-3 rounded-[18px] border border-white/10 bg-white/5 p-3">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-              {metric.title} — Trend & Gauge
+      {/* Visualization popup */}
+      {vizOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4"
+          onClick={() => setVizOpen(false)}
+        >
+          <div
+            className="max-h-[90vh] w-full max-w-[680px] overflow-y-auto rounded-[22px] border border-white/15 bg-slate-900 p-6 text-left shadow-[0_16px_60px_rgba(0,0,0,0.45)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 pb-5 border-b border-white/8">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Metric Visualization</div>
+                <div className="mt-1.5 text-[18px] font-bold text-white">{metric.title}</div>
+                <div className="mt-1 text-[12px] text-slate-400">
+                  Current: <span className="font-semibold text-white">{metric.valueText}</span>
+                  <span className="mx-2 text-white/20">|</span>
+                  Target: <span className="font-semibold text-slate-300">{metric.thresholdText}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVizOpen(false)}
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-slate-200 ring-1 ring-white/10 transition hover:bg-white/10"
+                aria-label="Close visualization"
+              >
+                <Icon name="close" className="text-[18px]" />
+              </button>
             </div>
-            <MetricViz metric={metric} trend={trend} />
+
+            {/* Content */}
+            <div className="pt-5">
+              <MetricViz metric={metric} trend={trend} filteredRows={filteredRows} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className={cn('grid transition-all', expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
         <div id={contentId} className="min-h-0 overflow-hidden">

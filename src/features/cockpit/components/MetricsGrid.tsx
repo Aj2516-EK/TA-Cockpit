@@ -3,12 +3,14 @@ import type { Metric } from '../model'
 import { sortRag } from '../model'
 import { MetricCard, type MetricAssignment } from './MetricCard'
 import type { TrendPoint } from '../runtime-data/trends'
+import type { ApplicationFactRow } from '../runtime-data/types'
 
 export function MetricsGrid({
   metrics,
   expanded,
   onToggleMetric,
   trends,
+  filteredRows,
   assignments,
   onAssignMetric,
   onClearAssignment,
@@ -17,6 +19,7 @@ export function MetricsGrid({
   expanded: Record<string, boolean>
   onToggleMetric: (metricId: string) => void
   trends: Record<string, TrendPoint[]>
+  filteredRows: ApplicationFactRow[] | null
   assignments: Record<string, MetricAssignment>
   onAssignMetric: (metricId: string, assignment: MetricAssignment) => void
   onClearAssignment: (metricId: string) => void
@@ -32,6 +35,7 @@ export function MetricsGrid({
           expanded={!!expanded[m.id]}
           onToggle={() => onToggleMetric(m.id)}
           trend={trends[m.id]}
+          filteredRows={filteredRows}
           assignment={assignments[m.id]}
           onAssign={(assignment) => onAssignMetric(m.id, assignment)}
           onClearAssignment={() => onClearAssignment(m.id)}
